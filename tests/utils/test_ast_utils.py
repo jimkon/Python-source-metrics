@@ -1,8 +1,8 @@
 import ast
 import unittest
 
-from src.python import ast_utils
-from src.python.ast_utils import InvalidSubclassType
+from src.utils import ast_utils
+from src.utils.ast_utils import InvalidSubclassType
 
 
 class TestAstUtils(unittest.TestCase):
