@@ -48,3 +48,8 @@ def dotted_repr_of_path(path):
     dotted = '.'.join(parts)
     return dotted
 
+
+def remove_first_path_seperator(path):
+    parts = break_path_in_parts(path)
+    return os.sep.join(parts)
+

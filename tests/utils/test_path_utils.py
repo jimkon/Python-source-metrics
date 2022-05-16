@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest import mock
 
@@ -68,6 +69,11 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(path_utils.dotted_repr_of_path('a'), 'a')
         self.assertEqual(path_utils.dotted_repr_of_path('/a/'), 'a')
         self.assertEqual(path_utils.dotted_repr_of_path('/a/c.d'), 'a.c.d')
+
+    def test_remove_first_path_seperator(self):
+        self.assertEqual(path_utils.remove_first_path_seperator('/a/b/c'), f'a{os.sep}b{os.sep}c')
+        self.assertEqual(path_utils.remove_first_path_seperator('a/b/c'), f'a{os.sep}b{os.sep}c')
+
 
 
 if __name__ == '__main__':

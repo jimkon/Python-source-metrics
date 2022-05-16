@@ -13,10 +13,9 @@ class TestPythonUtils(unittest.TestCase):
         except ValueError:
             self.assertTrue(False)
 
-    def test_validate_and_convert_path_to_module_name(self):
-        self.assertEqual(pu.validate_and_convert_path_to_module_name("a/b/c.py"), 'a.b.c')
-        self.assertEqual(pu.validate_and_convert_path_to_module_name("c.py"), 'c')
-        self.assertRaises(ValueError, pu.validate_and_convert_path_to_module_name, 'c')
+    def test_convert_python_path_to_module_name(self):
+        self.assertEqual(pu.convert_python_path_to_module_name("a/b/c.py"), 'a.b.c')
+        self.assertEqual(pu.convert_python_path_to_module_name("c.py"), 'c')
 
     def test_get_all_python_files(self):
         with mock.patch("src.utils.python_file_utils.get_all_filenames_in_directory") as mocker_files:
