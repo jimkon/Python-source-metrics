@@ -1,45 +1,41 @@
 import ast
 
 from src.python.basic_structure import PythonCodeObj
-from src.visitors.metrics_core import Metric
+from src.metrics.metrics_core import Metric
 
 
 class NumberOfCodeLinesMetric(Metric):
     name = 'number_of_lines'
 
-    def _calc(self, node):
-        if not isinstance(node, PythonCodeObj):
-            raise ValueError(f"Not a CodeObjMixin: {self}")
+    def _calc(self, p_obj):
+        return len(p_obj.code_lines)
 
-        return len(node.code_lines)
+    def calculate_module(self, module_obj, **kwargs):
+        return self._calc(module_obj)
 
-    def calculate_module(self, module_node, **kwargs):
-        return self._calc(module_node)
+    def calculate_class(self, class_obj, **kwargs):
+        return self._calc(class_obj)
 
-    def calculate_class(self, class_node, **kwargs):
-        return self._calc(class_node)
-
-    def calculate_function(self, function_node, **kwargs):
-        return self._calc(function_node)
+    def calculate_function(self, function_obj, **kwargs):
+        return self._calc(function_obj)
 
 
 class NumberOfArgsInFunctionsMetric(Metric):
     name = 'number_of_args_in_functions'
 
     @staticmethod
-    def _fetch_args(node):
-        args = [_ast.arg for _ast in node.ast if isinstance(_ast, ast.arg)]
+    def _fetch_args(p_obj):
+        args = [_ast.arg for _ast in p_obj.ast if isinstance(_ast, ast.arg)]
         return args
 
-    def calculate_function(self, node, **kwargs):
-        args = NumberOfArgsInFunctionsMetric._fetch_args(node)
+    def calculate_function(self, function_obj, **kwargs):
+        args = NumberOfArgsInFunctionsMetric._fetch_args(function_obj)
         return len(args)
 
-    def calculate_class_method(self, node, **kwargs):
-        args = set(NumberOfArgsInFunctionsMetric._fetch_args(node))
+    def calculate_class_method(self, class_method_obj, **kwargs):
+        args = set(NumberOfArgsInFunctionsMetric._fetch_args(class_method_obj))
         args.discard('self')
         args.discard('args')
         args.discard('kwargs')
         return len(args)
-
 

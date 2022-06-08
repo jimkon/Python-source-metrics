@@ -13,7 +13,7 @@ class AbstractVisitor(ABC):
         pass
 
 
-class PythonObjVisitor(AbstractVisitor):
+class TreeNodeVisitor(AbstractVisitor):
 
     def visit(self, node):
         self.visit_all(node)
@@ -57,7 +57,7 @@ class VisitedMixin:
         visitor.visit(self._node())
 
 
-class PrintPythonObjVisitor(PythonObjVisitor):
+class PrintPythonObjVisitor(TreeNodeVisitor):
     def __init__(self):
         self._count = 0
 

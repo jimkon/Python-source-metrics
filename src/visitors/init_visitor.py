@@ -4,10 +4,10 @@ from src.utils.ast_utils import get_first_ast_of_type, separate_statement
 from src.utils.logs import log_cyan
 from src.utils.path_utils import load_file_as_string
 from src.utils.python_file_utils import is_python_file
-from src.visitors.visitor import PythonObjVisitor
+from src.visitors.visitor import TreeNodeVisitor
 
 
-class PythonObjInitializer(PythonObjVisitor):
+class PythonObjInitializer(TreeNodeVisitor):
 
     def __init__(self, obj_factory):
         self._obj_factory = obj_factory

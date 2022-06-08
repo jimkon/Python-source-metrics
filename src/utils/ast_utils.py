@@ -1,5 +1,7 @@
 import ast
 
+from src.utils.logs import log_yellow
+
 
 class MissMatchSizeBetweenAstAndCodeSegment(ValueError):
     pass
@@ -13,7 +15,7 @@ def analyse_ast(code_segment):
     try:
         return list(ast.walk(ast.parse(code_segment, mode='exec')))
     except SyntaxError:
-        print(f"Warning-> Unable to analyse the syntax of code segment:\n\"{code_segment}\"")
+        log_yellow(f"Warning-> Unable to analyse the syntax of code segment:\n\"{code_segment}\"", verbosity=3)
         return []
 
 

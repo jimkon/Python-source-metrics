@@ -1,14 +1,10 @@
-import os
-from functools import cached_property
-
 import pandas as pd
 
 from src.python.python_obj_factory import ObjectFactory
 from src.utils.path_utils import load_file_as_string
 from src.utils.paths import Path
 from src.visitors.init_visitor import PythonObjInitializer
-from src.visitors.metrics_core import CalculateMetricPythonObjVisitor
-from src.visitors.visitor import PrintPythonObjVisitor, VisitedMixin
+from src.visitors.visitor import VisitedMixin
 
 
 class PythonSourceObj(VisitedMixin):
@@ -25,14 +21,6 @@ class PythonSourceObj(VisitedMixin):
     def _init_objs(self):
         visitor = PythonObjInitializer(self._obj_factory)
         self._head.pre_order_visit(visitor)
-
-    def print_objects(self):
-        self.use_visitor(PrintPythonObjVisitor())
-
-    def calculate_metric(self, metric):
-        metric_visitor = CalculateMetricPythonObjVisitor(metric)
-        self._head.pre_order_visit(metric_visitor)
-        return pd.DataFrame.from_dict(metric_visitor.results, orient='index')
 
     def use_visitor(self, visitor):
         self._head.pre_order_visit(visitor)

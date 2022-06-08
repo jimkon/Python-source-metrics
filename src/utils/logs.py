@@ -24,7 +24,7 @@ def log_cyan(*args, **kwargs):
     log(*args, **kwargs, rgb=(50, 200, 200))
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     log('test')
     log('test', rgb=(255, 0, 0))
     log('test', rgb=(0, 255, 0))

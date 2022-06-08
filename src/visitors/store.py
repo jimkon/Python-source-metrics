@@ -3,12 +3,12 @@ import os.path
 
 from src.configs import PATH_STORE_PYTHON_SOURCE_OBJECTS
 from src.python.basic_structure import PythonCodeObj
-from src.visitors.visitor import PythonObjVisitor
+from src.utils.storage_mixins import StorePythonSourceObj
+from src.visitors.visitor import TreeNodeVisitor
 
 
-class SavePythonSourceObj(PythonObjVisitor):
-    def __init__(self, to_file):
-        self._file_path = os.path.join(PATH_STORE_PYTHON_SOURCE_OBJECTS, to_file)
+class SavePythonSourceObj(TreeNodeVisitor, StorePythonSourceObj):
+    def __init__(self):
         self._storage_dict = {}
         pass
 
@@ -27,7 +27,6 @@ class SavePythonSourceObj(PythonObjVisitor):
         code = node.data.code if issubclass(node.data.__class__, PythonCodeObj) else None
         self._add_node(name, type, code, branches)
 
-    def save(self):
-        with open(self._file_path, 'w') as fp:
-            json.dump(self._storage_dict, fp, indent=4)
+    def data_to_store(self):
+        return self._storage_dict
 
