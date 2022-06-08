@@ -53,3 +53,18 @@ def remove_first_path_seperator(path):
     parts = break_path_in_parts(path)
     return os.sep.join(parts)
 
+
+def get_file_extension(path):
+    _, ext = os.path.splitext(os.path.normpath(path))
+    if ext == '':
+        return None
+    else:
+        return ext
+
+
+def remove_extension(path):
+    ext = get_file_extension(path)
+    if ext:
+        return path[:-len(ext)]
+    else:
+        return path

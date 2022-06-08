@@ -51,3 +51,13 @@ def get_first_ast_of_type(code, list_of_types):# todo maybe avoid calling analys
             if isinstance(_ast, _type):
                 return _ast
     return None
+
+
+def fetch_compound_statement(asts_to_fetch, from_code):
+    fetched_ast = get_first_ast_of_type(from_code, asts_to_fetch)
+
+    if not fetched_ast:
+        return None, from_code
+    else:
+        fetched_code, remaining_code = separate_statement(from_code, fetched_ast)
+        return fetched_code, fetched_ast, remaining_code

@@ -74,6 +74,13 @@ class TestFiles(unittest.TestCase):
         self.assertEqual(path_utils.remove_first_path_seperator('/a/b/c'), f'a{os.sep}b{os.sep}c')
         self.assertEqual(path_utils.remove_first_path_seperator('a/b/c'), f'a{os.sep}b{os.sep}c')
 
+    def test_get_file_extension(self):
+        self.assertEqual(path_utils.get_file_extension('a/b/c.d'), '.d')
+        self.assertEqual(path_utils.get_file_extension('a/b/c/d'), None)
+
+    def test_remove_extension(self):
+        self.assertEqual(path_utils.remove_extension('a/b/c.d'), 'a/b/c')
+        self.assertEqual(path_utils.remove_extension('a/b/c/d'), 'a/b/c/d')
 
 
 if __name__ == '__main__':

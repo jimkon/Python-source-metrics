@@ -7,47 +7,55 @@ import abc
 from functools import cached_property
 
 from src.utils.ast_utils import analyse_ast, remove_first_n_characters
+from src.visitors.visitor import VisitedMixin
 
 
-class Node:
-    def __init__(self):
-        self.__depth = 0
+class NodeDepthAlreadySet(ValueError):
+    pass
 
-    def set_depth(self, depth):
+
+class NodeBranchesAlreadySet(ValueError):
+    pass
+
+
+class Node(VisitedMixin):
+    def __init__(self, data, depth=-1):
+        self.__data = data
         self.__depth = depth
 
-    def get_depth(self):
-        return self.__depth
-
-    def accept(self, visitor):
-        visitor.visit(self)
-
-
-class TreeNode(abc.ABC, Node):
-    def __init__(self, filename, parent=None):
-        super().__init__()
-        self.__filename = filename
-        self.__branches = None
-        self.__parent = parent
+    @property
+    def data(self):
+        return self.__data
 
     @property
-    def filename(self):
-        return self.__filename
+    def depth(self):
+        return self.__depth
 
-    @abc.abstractmethod
-    def name(self):
-        pass
+    def set_depth(self, depth):
+        if self.depth > -1:
+            self.__depth = depth
+        else:
+            raise NodeDepthAlreadySet
+
+
+class TreeNode(Node):
+    def __init__(self, parent, data):
+        super().__init__(data, parent.depth+1 if parent else 0)
+        self.__branches = None
+        self.__parent = parent
 
     def set_branches(self, list_objs):
         if self.__branches is None:
             self.__branches = {}
             for obj in list_objs:
-                obj.set_depth(self.get_depth()+1)
-                self.__branches[obj.name] = obj
+                obj.set_depth(self.depth+1)
+                self.__branches[obj.data.name] = obj
+        else:
+            raise NodeBranchesAlreadySet
 
     @property
     def branches(self):
-        return self.__branches
+        return self.__branches if self.__branches else {}
 
     @property
     def parent(self):
@@ -59,15 +67,44 @@ class TreeNode(abc.ABC, Node):
             for name, branch in self.branches.items():
                 branch.pre_order_visit(visitor)
 
-    def __getitem__(self, item):
-        return self.branches[item]
+    def __str__(self):
+        return f"(Node) {self.data}"
+
+    # def __getitem__(self, item):
+    #     return self.branches[item]
 
 
-class CodeObjMixin(abc.ABC):
-    @abc.abstractmethod
-    @cached_property
+class PythonObjData(abc.ABC):
+    type = None
+
+    def __init__(self, name, path):
+        self.__path = path
+        self.__name = name
+
+    @property
+    def path(self):
+        return self.__path
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def name_short(self):
+        return self.name.split('.')[-1]
+
+    def __str__(self):
+        return f"{self.name}: {self.type.capitalize()}"
+
+
+class PythonCodeObj(PythonObjData):
+    def __init__(self, name, path, code):
+        super().__init__(name, path)
+        self.__code = code
+
+    @property
     def code(self):
-        pass
+        return self.__code
 
     @cached_property
     def ast(self):
@@ -77,8 +114,11 @@ class CodeObjMixin(abc.ABC):
     def code_lines(self):
         return self.code.split('\n')
 
+    def __str__(self):
+        return f"{super().__str__()}, code \"{self.code_lines[0]}\"..."
 
-class CompoundStatementCodeMixin(CodeObjMixin, abc.ABC):
+
+class CompoundStatementCodeMixin(PythonCodeObj):
     @cached_property
     def statement_def_ast(self):
         return self.ast[1]

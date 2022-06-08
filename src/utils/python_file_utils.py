@@ -2,13 +2,20 @@ import ast
 import os
 
 from src.configs import PYTHON_FILE_EXTENSION
-from src.utils.path_utils import break_path_in_parts, filter_filenames_by_extension, get_all_filenames_in_directory, load_file_as_string, \
-    remove_path_prefix
+from src.utils.path_utils import break_path_in_parts, filter_filenames_by_extension, get_all_filenames_in_directory, \
+    load_file_as_string, \
+    remove_path_prefix, get_file_extension
+
+
+def is_python_file(path):
+    ext = get_file_extension(path)
+    if ext == PYTHON_FILE_EXTENSION:
+        return True
+    return False
 
 
 def validate_python_path(path):
-    _, ext = os.path.splitext(os.path.normpath(path))
-    if ext != PYTHON_FILE_EXTENSION:
+    if is_python_file(path):
         raise ValueError(f"Path must be pointing to a python (.py) file. Given: {path}")
 
 
