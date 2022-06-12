@@ -1,5 +1,5 @@
 import ast
-from functools import cached_property
+from functools import cached_property, lru_cache
 
 from src.utils.storage_mixins import StoreClassUML
 from src.visitors.visitor import TreeNodeVisitor
@@ -50,7 +50,7 @@ class PlantUMLDocument:
         self._start_class(class_obj.name)
         self.add_fields(class_obj.fields)
         self._add_line("==")
-        self.add_funtions(class_obj.functions)
+        self.add_funtions(class_obj.public_functions)
         self._end_brackets()
         self._add_line()
 
@@ -108,17 +108,26 @@ class UMLClass:
     def _class_def(self):
         return self._ast[1]
 
+    @lru_cache
+    def _break_name_into_comps(self):
+        full_name = self._node.data.name
+        parts = full_name.split(".")
+        name = parts[-1]
+        module_name = parts[-2] if len(parts) > 1 else 'unknown_module'
+        package_name = '.'.join(parts[:-3]) if len(parts) > 2 else 'unknown_package'
+        return package_name, module_name, name
+
     @cached_property
     def name(self):
         return self._class_def.name
 
     @cached_property
     def module_name(self):
-        return 'unknown_module'
+        return self._break_name_into_comps()[1]
 
     @cached_property
     def package_name(self):
-        return 'unknown_package'
+        return self._break_name_into_comps()[0]
 
     @cached_property
     def inheritances(self):
@@ -136,7 +145,7 @@ class UMLClass:
 
     @cached_property
     def public_functions(self):
-        return []   # TODO to implement
+        return [function for function in self.functions if function[0] != '_']   # TODO to implement
 
     @cached_property
     def fields(self):
