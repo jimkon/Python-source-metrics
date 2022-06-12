@@ -46,6 +46,11 @@ class StoreClassUML(StoreUMLTextAsDiagramPNG, ABC):
         return PATH_STORE_UML_CLASS_TXT
 
 
+class StoreClassRelationUML(StoreUMLTextAsDiagramPNG, ABC):
+    def path_to_store(self):
+        return PATH_STORE_UML_CLASS_RELATION_TXT
+
+
 class StoreJSON(StoreData, ABC):
     def save(self):
         with open(self.path_to_store(), 'w') as fp:
