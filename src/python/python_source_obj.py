@@ -19,8 +19,7 @@ class PythonSourceObj(VisitedMixin):
         self._init_objs()
 
     def _init_objs(self):
-        visitor = PythonObjInitializer(self._obj_factory)
-        self._head.pre_order_visit(visitor)
+        self.use_visitor(PythonObjInitializer(self._obj_factory))
 
     def use_visitor(self, visitor):
         self._head.pre_order_visit(visitor)

@@ -65,6 +65,8 @@ class CalculateMetricVisitor(TreeNodeVisitor, StoreCSV):
 
 
 class Metric(abc.ABC):
+    name = 'no-name'
+
     def calculate(self, p_obj, **kwargs):
         pass
 
@@ -82,3 +84,9 @@ class Metric(abc.ABC):
 
     def calculate_class_method(self, p_obj, **kwargs):
         pass
+
+
+class TypeMetric(Metric):
+    name = 'type'
+    def calculate(self, p_obj, **kwargs):
+        return p_obj.type
