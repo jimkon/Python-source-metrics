@@ -12,7 +12,7 @@ class PlantUMLDocument:
         self._start_uml()
 
     def _add_line(self, line=''):
-        self._res_string += (" " * self._ident) + line + "\n"
+        self._res_string += ("\t" * self._ident) + line + "\n"
 
     def _end_brackets(self):
         self._ident -= 1
@@ -20,6 +20,8 @@ class PlantUMLDocument:
 
     def _start_uml(self):
         self._add_line('@startuml')
+        self._add_line('left to right direction')
+        # self._add_line('scale max 1024 width')
 
     def _end_uml(self):
         self._add_line('@enduml')
@@ -30,9 +32,11 @@ class PlantUMLDocument:
 
     def _start_module(self, module_name):
         self._add_line(f"package {module_name} <<Rectangle>>" + "{")
+        self._ident += 1
 
     def _start_package(self, package_name):
         self._add_line(f"package {package_name} <<Folder>>" + "{")
+        self._ident += 1
 
     def add_package(self, package_name, package):
         self._start_package(package_name)
@@ -114,12 +118,13 @@ class UMLClass:
         parts = full_name.split(".")
         name = parts[-1]
         module_name = parts[-2] if len(parts) > 1 else 'unknown_module'
-        package_name = '.'.join(parts[:-3]) if len(parts) > 2 else 'unknown_package'
+        package_name = '.'.join(parts[:-2]) if len(parts) > 2 else 'unknown_package'
         return package_name, module_name, name
 
     @cached_property
     def name(self):
-        return self._class_def.name
+        inheritances_str = f"({','.join(self.inheritances)})" if len(self.inheritances)>0 else ''
+        return f"{self._class_def.name}{inheritances_str}"
 
     @cached_property
     def module_name(self):
@@ -132,7 +137,13 @@ class UMLClass:
     @cached_property
     def inheritances(self):
         bases = self._class_def.bases
-        return [base.id for base in bases]
+        res = []
+        for base in bases:
+            if hasattr(base, 'id'):
+                res.append(base.id)
+            elif hasattr(base, 'value'):
+                res.append(f"{base.value.id}_{base.attr}")
+        return res
 
     @cached_property
     def is_abstract(self):
