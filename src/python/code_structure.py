@@ -32,6 +32,5 @@ class ClassMethodObj(FunctionObj):
     type = "class_method"
 
 
-class IdentifierObj(PythonCodeObj):
-    type = "identifier"
-
+# class IdentifierObj(PythonCodeObj):
+#     type = "identifier"

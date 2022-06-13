@@ -1,7 +1,7 @@
 import ast
 
 from src.python.basic_structure import PythonCodeObj
-from src.metrics.metrics_core import Metric
+from src.metrics.metrics_core import Metric, TypeMetric
 
 
 class NumberOfCodeLinesMetric(Metric):
@@ -38,4 +38,3 @@ class NumberOfArgsInFunctionsMetric(Metric):
         args.discard('args')
         args.discard('kwargs')
         return len(args)
-

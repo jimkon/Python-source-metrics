@@ -26,5 +26,3 @@ class PythonSourceObj(VisitedMixin):
 
     def _node(self):
         return self._head
-
-
