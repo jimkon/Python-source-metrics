@@ -23,6 +23,7 @@ class PythonSourceObj(VisitedMixin):
 
     def use_visitor(self, visitor):
         self._head.pre_order_visit(visitor)
+        visitor.done()
 
     def _node(self):
         return self._head

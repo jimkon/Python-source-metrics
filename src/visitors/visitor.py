@@ -12,6 +12,9 @@ class AbstractVisitor(ABC):
     def visit(self, node):
         pass
 
+    def done(self):
+        pass
+
 
 class TreeNodeVisitor(AbstractVisitor):
 

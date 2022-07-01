@@ -63,6 +63,9 @@ class CalculateMetricVisitor(TreeNodeVisitor, StoreCSV):
         df = pd.DataFrame(results_t)
         return df
 
+    def done(self):
+        self.save()
+
 
 class Metric(abc.ABC):
     name = 'no-name'
