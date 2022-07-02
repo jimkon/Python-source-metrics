@@ -4,11 +4,7 @@ from abc import ABC, abstractmethod
 import plantuml
 
 from src.configs import *
-
-
-def _write_text_to_file(filepath, data):
-    with open(filepath, 'w') as fp:
-        fp.write(data)
+from src.utils.io_files import write_text_to_file
 
 
 def _produce_uml_diagram_from_text_file(input_text_filepath):
@@ -32,7 +28,7 @@ class StoreData(ABC):
 
 class StoreText(StoreData, ABC):
     def save(self):
-        _write_text_to_file(self.path_to_store(), self.data_to_store())
+        write_text_to_file(self.path_to_store(), self.data_to_store())
 
 
 class StoreUMLTextAsDiagramPNG(StoreText, ABC):
@@ -59,7 +55,7 @@ class StoreJSON(StoreData, ABC):
 
 class StorePythonSourceObj(StoreJSON, ABC):
     def path_to_store(self):
-        return PATH_STORE_PYTHON_SOURCE_OBJECTS
+        return PATH_STORE_PYTHON_SOURCE_OBJECTS_JSON
 
 
 class StoreCSV(StoreData, ABC):

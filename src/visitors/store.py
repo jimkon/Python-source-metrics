@@ -1,7 +1,3 @@
-import json
-import os.path
-
-from src.configs import PATH_STORE_PYTHON_SOURCE_OBJECTS
 from src.python.basic_structure import PythonCodeObj
 from src.utils.storage_mixins import StorePythonSourceObj
 from src.visitors.visitor import TreeNodeVisitor
