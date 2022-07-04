@@ -5,12 +5,10 @@ from src.configs import PATH_STORE_JOINT_STAT_TABLE_CSV, PATH_RES_HTML_TABLE
 from src.utils.io_files import read_text_from_file
 from src.utils.storage_mixins import StoreText
 
-_table_template = read_text_from_file(PATH_RES_HTML_TABLE)
-
 
 class HTMLTableBuilder:
     def __init__(self, title):
-        self._html_str = _table_template
+        self._html_str = read_text_from_file(PATH_RES_HTML_TABLE)
         self.add_title(title)
 
     def _replace(self, this, with_that):
@@ -25,16 +23,16 @@ class HTMLTableBuilder:
         self._replace('[columns]', cols_html)
 
     def add_row(self, row):
-        self._replace('[rows]', '[row]\n    [rows]')
         cols_html = "".join([f"<td>{column}</td>" for column in row])
-        cols_html = f"<tr>{cols_html}</tr>"
+        cols_html = f"<tr>{cols_html}</tr>\n    [row]"
         self._replace('[row]', cols_html)
 
     def html(self):
+        self._replace("[row]", '')
         return self._html_str
 
 
-class SimpleHTMLTable(StoreText):
+class SimpleHTMLTableBuilder(StoreText):
     def __init__(self, csv_path):
         self._html_path = csv_path+".html"
         self._df = pd.read_csv(csv_path)
@@ -46,12 +44,15 @@ class SimpleHTMLTable(StoreText):
 
         self.save()
 
-    def data_to_store(self):
+    def html(self):
         return self._html_builder.html()
+
+    def data_to_store(self):
+        return self.html()
 
     def path_to_store(self):
         return self._html_path
 
 
 if __name__ == '__main__':
-    SimpleHTMLTable(PATH_STORE_JOINT_STAT_TABLE_CSV)
+    SimpleHTMLTableBuilder(PATH_STORE_JOINT_STAT_TABLE_CSV)
