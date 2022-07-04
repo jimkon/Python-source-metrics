@@ -3,7 +3,7 @@ import os.path
 
 import pandas as pd
 
-from src.configs import PATH_STORE_METRIC_RESULTS
+from src.configs import PATH_STORE_METRIC_RESULTS_DIR
 from src.utils.logs import log_yellow
 from src.utils.storage_mixins import StoreCSV
 from src.visitors.visitor import TreeNodeVisitor
@@ -53,7 +53,7 @@ class CalculateMetricVisitor(TreeNodeVisitor, StoreCSV):
         return self._results
 
     def path_to_store(self):
-        return os.path.join(PATH_STORE_METRIC_RESULTS, self._metric.name+'.csv')
+        return os.path.join(PATH_STORE_METRIC_RESULTS_DIR, self._metric.name + '.csv')
 
     def data_to_store(self):
         results_t = {
