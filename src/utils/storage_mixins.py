@@ -1,15 +1,10 @@
 import json
+import os.path
 from abc import ABC, abstractmethod
 
-import plantuml
 
 from src.configs import *
 from src.utils.io_files import write_text_to_file
-
-
-def _produce_uml_diagram_from_text_file(input_text_filepath):
-    pl = plantuml.PlantUML('http://www.plantuml.com/plantuml/img/')
-    pl.processes_file(input_text_filepath, directory='')
 
 
 class StoreData(ABC):
@@ -17,13 +12,26 @@ class StoreData(ABC):
     def data_to_store(self):
         pass
 
-    @abstractmethod
     def path_to_store(self):
+        return join(self.path(), self.filename())
+
+    @abstractmethod
+    def path(self):
+        pass
+
+    @abstractmethod
+    def filename(self):
         pass
 
     @abstractmethod
     def save(self):
         pass
+
+    def delete(self):
+        if os.path.exists(self.path_to_store()):
+            os.remove(self.path_to_store())
+        else:
+            raise ValueError(f"WARNING: The file ({self.path_to_store()}) does not exist")
 
 
 class StoreText(StoreData, ABC):
@@ -33,8 +41,10 @@ class StoreText(StoreData, ABC):
 
 class StoreUMLTextAsDiagramPNG(StoreText, ABC):
     def save(self):
-        super().save()
-        _produce_uml_diagram_from_text_file(self.path_to_store())
+        raise NotImplemented
+        # super().save()
+        # print("WARNING _produce_uml_diagram_from_text_file(self.path_to_store()) ")
+        # _produce_uml_diagram_from_text_file(self.path_to_store())
 
 
 class StoreClassUML(StoreUMLTextAsDiagramPNG, ABC):
@@ -63,4 +73,21 @@ class StoreCSV(StoreData, ABC):
         path = self.path_to_store()
         df = self.data_to_store()
         df.to_csv(path, index=False)
+
+
+class StoreStatsImage(StoreData, ABC):# TODO to implement
+    pass
+
+
+class StoreHTMLBuilds(StoreText, ABC):
+    def path(self):
+        return PATH_STORE_HTML_BUILDS_DIR
+
+
+class StoreReports(StoreText, ABC):
+    def __init__(self, report_file):
+        self._report_file = report_file
+
+    def path_to_store(self):
+        return os.path.join(PATH_STORE_REPORTS_DIR, self._report_file)
 
