@@ -79,9 +79,24 @@ class StoreStatsImage(StoreData, ABC):# TODO to implement
     pass
 
 
-class StoreHTMLBuilds(StoreText, ABC):
+class StoreHTMLBuilds(StoreText):
+    def __init__(self, filename, html_builder):
+        self._filename = filename
+        self._html_builder = html_builder
+
+    def filename(self):
+        return self._filename
+
+    def data_to_store(self):
+        return self._html_builder.html
+
     def path(self):
         return PATH_STORE_HTML_BUILDS_DIR
+
+
+class StoreHTMLImageBuilds(StoreHTMLBuilds):
+    def __init__(self, html_image_builder):
+        super(StoreHTMLBuilds, self).__init__(html_image_builder.image_path, html_image_builder)
 
 
 class StoreReports(StoreText, ABC):

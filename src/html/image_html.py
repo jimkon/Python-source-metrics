@@ -1,15 +1,22 @@
 import base64
 from PIL import Image
+import os
 
 from src.configs import PATH_RES_HTML_IMAGE
 from src.html.builder import HTMLBuilder
+from src.utils.storage_mixins import StoreHTMLImageBuilds
 
 
 class HTMLImageBuilder(HTMLBuilder):
-    def __init__(self):
+    def __init__(self, image_path):
         super(HTMLImageBuilder, self).__init__()
+        self._image_path = image_path
         self.build()
         self.save()
+
+    @property
+    def image_path(self):
+        return self._image_path
 
     def template_file(self):
         return PATH_RES_HTML_IMAGE
@@ -18,8 +25,7 @@ class HTMLImageBuilder(HTMLBuilder):
         self._html_str = self._html_str.replace(this, with_that)
 
     def build(self):
-        # self.add_image(r"C:\Users\jim\PycharmProjects\Python-source-metrics\files\uml\class_uml.png")
-        self.add_image(r"C:\Users\jim\Desktop\download.gif")
+        self.add_image(self._image_path)
 
     def add_image(self, image_path, size=None):
         with open(image_path, "rb") as image_file:
@@ -31,10 +37,16 @@ class HTMLImageBuilder(HTMLBuilder):
         self.replace('[width]', str(size[0]))
         self.replace('[height]', str(size[1]))
 
+        return self
+
     def filename(self):
-        return r"image2.csv.html"
+        return f"{os.path.basename(self._image_path)}.html"
 
 
 if __name__ == '__main__':
-    t = HTMLImageBuilder()
+    # TODO [continue] na treksw ayto
+    # t = HTMLImageBuilder(r"C:\Users\jim\PycharmProjects\Python-source-metrics\files\uml\class_uml.png")
+    t = HTMLImageBuilder().add_image(r"C:\Users\jim\Desktop\download.gif")
     print(t.html())
+    StoreHTMLImageBuilds(t).save()
+
