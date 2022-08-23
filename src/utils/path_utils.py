@@ -68,3 +68,16 @@ def remove_extension(path):
         return path[:-len(ext)]
     else:
         return path
+
+
+def copy_file_from_to(from_path, to_path):
+    with open(from_path, 'r') as f:
+        file_content_str = f.read()
+
+    if os.path.isfile(from_path):
+        os.makedirs(os.path.dirname(to_path), exist_ok=True)
+    else:
+        os.makedirs(to_path, exist_ok=True)
+
+    with open(to_path, 'w') as f:
+        f.write(file_content_str)

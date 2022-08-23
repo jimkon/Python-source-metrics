@@ -4,7 +4,7 @@ PYTHON_FILE_EXTENSION = '.py'
 
 PATH_ROOT = r"C:\Users\jim\PycharmProjects\Python-source-metrics"
 
-PATH_FILES_DIR = join(PATH_ROOT, "files")
+PATH_FILES_DIR = join(PATH_ROOT, "report_files")
 
 PATH_STORE_HTML_BUILDS_DIR = join(PATH_FILES_DIR, "html_builds")
 
