@@ -1,6 +1,6 @@
 import argparse
 
-from src.objects.grab_code import GrabCode
+from src.objects.grab_code import GrabCode, grab_code
 from src.python.python_source_obj import PythonSourceObj
 
 
@@ -21,9 +21,8 @@ def main():
     args = read_args()
     print(args)
     source = args['src']
-    # dest = args['dest']
 
-    GrabCode(source)
+    grab_code(source)
 
 
 def fetch_and_analyse_source(source_code_path):

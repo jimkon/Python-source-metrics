@@ -1,9 +1,12 @@
 import os.path
 from functools import lru_cache
 
-from src.configs import PATH_FILES_DIR
+from src.configs import PATH_CODE_COPY_DIR
 from src.utils import path_utils
-from src.utils.data_objects import AbstractObject
+
+
+def grab_code(src_path):
+    GrabCode(src_path)
 
 
 class GrabCode:
@@ -17,7 +20,7 @@ class GrabCode:
 
     @property
     def _working_dir(self):
-        return os.path.join(self._base_dir, PATH_FILES_DIR, 'code_copy')
+        return os.path.join(self._base_dir, PATH_CODE_COPY_DIR)
 
     @lru_cache
     def _grab_all_python_paths(self):
