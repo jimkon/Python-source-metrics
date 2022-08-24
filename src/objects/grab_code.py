@@ -32,7 +32,7 @@ class GrabCode:
 
     @lru_cache
     def _calculate_all_new_python_paths(self):
-        if self._base_dir is '':
+        if self._base_dir == '':
             return [os.path.join(self._working_dir, os.path.basename(python_path))
              for python_path in self._grab_all_python_paths()]
 
