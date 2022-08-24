@@ -24,11 +24,18 @@ class GrabCode:
 
     @lru_cache
     def _grab_all_python_paths(self):
-        all_filenames = path_utils.get_all_filenames_in_directory(self._path)
+        if os.path.isfile(self._path):
+            all_filenames = [self._path]
+        else:
+            all_filenames = path_utils.get_all_filenames_in_directory(self._path)
         return path_utils.filter_filenames_by_extension(all_filenames, '.py')
 
     @lru_cache
     def _calculate_all_new_python_paths(self):
+        if self._base_dir is '':
+            return [os.path.join(self._working_dir, os.path.basename(python_path))
+             for python_path in self._grab_all_python_paths()]
+
         return [python_path.replace(self._base_dir, self._working_dir)
                 for python_path in self._grab_all_python_paths()]
 
