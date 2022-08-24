@@ -22,7 +22,7 @@ def main():
     print(args)
     source = args['src']
 
-    grab_code(source)
+    print(grab_code(source))
 
 
 def fetch_and_analyse_source(source_code_path):

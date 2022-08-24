@@ -1,8 +1,9 @@
+import os
 from os.path import join
 
 PYTHON_FILE_EXTENSION = '.py'
 
-PATH_ROOT = ""  # r"C:\Users\jim\PycharmProjects\Python-source-metrics"
+PATH_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # r"C:\Users\jim\PycharmProjects\Python-source-metrics"
 
 PATH_FILES_DIR = join(PATH_ROOT, "report_files")
 PATH_CODE_COPY_DIR = join(PATH_FILES_DIR, "code_copy")

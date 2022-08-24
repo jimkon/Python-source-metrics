@@ -18,7 +18,8 @@ class TestGrabCode(unittest.TestCase):
         for path, base_dir in example_paths_and_base_dirs:
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode(path)
-                self.assertEqual(gc_obj._base_dir, base_dir)
+                test_value, expected_value = gc_obj._base_dir, base_dir
+                self.assertEqual(test_value, expected_value)
 
     def test__working_dir(self):
         example_paths_and_working_dirs = [
@@ -31,7 +32,8 @@ class TestGrabCode(unittest.TestCase):
         for path, working_dir in example_paths_and_working_dirs:
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode(path)
-                self.assertEqual(gc_obj.working_dir, os.path.join(working_dir, PATH_CODE_COPY_DIR))
+                test_value, expected_value = gc_obj._working_dir, PATH_CODE_COPY_DIR
+                self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_nested_dirs(self):
         with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
@@ -46,12 +48,13 @@ class TestGrabCode(unittest.TestCase):
 
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
-                self.assertEqual(gc_obj._grab_all_python_paths(),
-                                 [
+                test_value = gc_obj._grab_all_python_paths()
+                expected_value = [
                                      'a.py',
                                      'temp_dir/a.py',
                                      'temp_dir/one_more_temp_dir/a.py',
-                                 ])
+                                 ]
+                self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_single_file(self):
         with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
@@ -62,28 +65,31 @@ class TestGrabCode(unittest.TestCase):
 
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
-                self.assertEqual(gc_obj._grab_all_python_paths(),
-                                 [
-                                     'a.py'
-                                 ])
+                test_value = gc_obj._grab_all_python_paths()
+                expected_value = [
+                    'a.py',
+                ]
+                self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_pointing_on_python_file(self):
         with patch("os.path.isfile") as mock_isfile:
             mock_isfile.return_value = True
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode('a.py')
-                self.assertEqual(gc_obj._grab_all_python_paths(),
-                                 [
-                                     'a.py'
-                                 ])
+                test_value = gc_obj._grab_all_python_paths()
+                expected_value = [
+                    'a.py',
+                ]
+                self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_pointing_on_non_python_file(self):
         with patch("os.path.isfile") as mock_isfile:
             mock_isfile.return_value = True
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode('a.not_py')
-                self.assertEqual(gc_obj._grab_all_python_paths(),
-                                 [])
+                test_value = gc_obj._grab_all_python_paths()
+                expected_value = []
+                self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_empty_dir(self):
         with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
@@ -91,18 +97,19 @@ class TestGrabCode(unittest.TestCase):
 
             with patch.object(GrabCode, 'copy_all_python_files'):
                 gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
-                self.assertEqual(gc_obj._grab_all_python_paths(),
-                                 [])
+                test_value = gc_obj._grab_all_python_paths()
+                expected_value = []
+                self.assertEqual(test_value, expected_value)
 
     @patch.object(GrabCode, 'copy_all_python_files')
     @patch.object(GrabCode, '_grab_all_python_paths', return_value=['example_dir/src/a.py'])
     def test__calculate_all_new_python_paths(self, mock_paths, mock_cpy):
         gc_obj = GrabCode('example_dir//src')
         self.assertEqual(gc_obj._base_dir, 'example_dir')
-        self.assertEqual(gc_obj.working_dir, os.path.join('example_dir', PATH_CODE_COPY_DIR))
+        self.assertEqual(gc_obj._working_dir, PATH_CODE_COPY_DIR)
 
         expected_new_paths = [
-            os.path.join('example_dir', PATH_CODE_COPY_DIR, 'src/a.py')
+            os.path.join(PATH_CODE_COPY_DIR, 'src/a.py')
         ]
 
         for new_path, exp_new_path in zip(gc_obj._calculate_all_new_python_paths(), expected_new_paths):
@@ -113,7 +120,7 @@ class TestGrabCode(unittest.TestCase):
     def test__calculate_all_new_python_paths_edge_case(self, mock_paths, mock_cpy):
         gc_obj = GrabCode('example_dir')
         self.assertEqual(gc_obj._base_dir, '')
-        self.assertEqual(gc_obj.working_dir, os.path.join(PATH_CODE_COPY_DIR))
+        self.assertEqual(gc_obj._working_dir, PATH_CODE_COPY_DIR)
 
         expected_new_paths = [
             os.path.join(PATH_CODE_COPY_DIR, 'a.py')
@@ -123,11 +130,11 @@ class TestGrabCode(unittest.TestCase):
             self.assertEqual(os.path.normpath(exp_new_path), os.path.normpath(new_path))
 
     @patch.object(GrabCode, '_grab_all_python_paths', return_value=['example_dir/src/a.py'])
-    @patch.object(GrabCode, '_calculate_all_new_python_paths', return_value=[os.path.join('example_dir', PATH_CODE_COPY_DIR, 'src/a.py')])
+    @patch.object(GrabCode, '_calculate_all_new_python_paths', return_value=[os.path.join(PATH_CODE_COPY_DIR, 'src/a.py')])
     def test_copy_all_python_files(self, mock_grab, mock_calc):
         with patch("src.objects.grab_code.path_utils.copy_file_from_to") as mock_cpy:
             GrabCode('example_dir//src')
-            mock_cpy.assert_called_with('example_dir/src/a.py', os.path.join('example_dir', PATH_CODE_COPY_DIR, 'src/a.py'))
+            mock_cpy.assert_called_with('example_dir/src/a.py', os.path.join(PATH_CODE_COPY_DIR, 'src/a.py'))
 
     # def test_grab_code_execution(self):
     #     with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
