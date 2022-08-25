@@ -1,4 +1,5 @@
 import os
+import tempfile
 import unittest
 from unittest.mock import patch, call
 
@@ -36,67 +37,66 @@ class TestGrabCode(unittest.TestCase):
                 self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_nested_dirs(self):
-        with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
-            mock_filenames.return_value = [
-                'a.py',
-                'b.not_py',
-                'temp_dir/a.py',
-                'temp_dir/b.not_py',
-                'temp_dir/one_more_temp_dir/a.py',
-                'temp_dir/one_more_temp_dir/b.not_py'
-            ]
+        with tempfile.TemporaryDirectory() as example_dir:
+            a = tempfile.NamedTemporaryFile(suffix='_a.py', dir=example_dir)
+            b = tempfile.NamedTemporaryFile(suffix='_b.not_py', dir=example_dir)
+            temp_dir = tempfile.TemporaryDirectory(dir=example_dir)
+            temp_dir_a = tempfile.NamedTemporaryFile(suffix='_a.py', dir=temp_dir.name)
+            temp_dir_b = tempfile.NamedTemporaryFile(suffix='_b.not_py', dir=temp_dir.name)
+            one_more_temp_dir = tempfile.TemporaryDirectory(dir=temp_dir.name)
+            one_more_temp_dir_a = tempfile.NamedTemporaryFile(suffix='_a.py', dir=one_more_temp_dir.name)
+            one_more_temp_dir_b = tempfile.NamedTemporaryFile(suffix='_b.not_py', dir=one_more_temp_dir.name)
 
             with patch.object(GrabCode, 'copy_all_python_files'):
-                gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
+                gc_obj = GrabCode(example_dir)
                 test_value = gc_obj._grab_all_python_paths()
                 expected_value = [
-                                     'a.py',
-                                     'temp_dir/a.py',
-                                     'temp_dir/one_more_temp_dir/a.py',
-                                 ]
+                    a.name,
+                    temp_dir_a.name,
+                    one_more_temp_dir_a.name
+                ]
                 self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_single_file(self):
-        with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
-            mock_filenames.return_value = [
-                'a.py',
-                'b.not_py'
-            ]
+        with tempfile.TemporaryDirectory() as example_dir:
+            a = tempfile.NamedTemporaryFile(suffix='_a.py', dir=example_dir)
+            b = tempfile.NamedTemporaryFile(suffix='_b.not_py', dir=example_dir)
 
             with patch.object(GrabCode, 'copy_all_python_files'):
-                gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
+                gc_obj = GrabCode(example_dir)
                 test_value = gc_obj._grab_all_python_paths()
                 expected_value = [
-                    'a.py',
+                    a.name,
                 ]
                 self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_pointing_on_python_file(self):
-        with patch("os.path.isfile") as mock_isfile:
-            mock_isfile.return_value = True
+        with tempfile.TemporaryDirectory() as example_dir:
+            a = tempfile.NamedTemporaryFile(suffix='_a.py', dir=example_dir)
+
             with patch.object(GrabCode, 'copy_all_python_files'):
-                gc_obj = GrabCode('a.py')
+                gc_obj = GrabCode(a.name)
                 test_value = gc_obj._grab_all_python_paths()
                 expected_value = [
-                    'a.py',
+                    a.name,
                 ]
                 self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_pointing_on_non_python_file(self):
-        with patch("os.path.isfile") as mock_isfile:
-            mock_isfile.return_value = True
+        with tempfile.TemporaryDirectory() as example_dir:
+            b = tempfile.NamedTemporaryFile(suffix='_b.not_py', dir=example_dir)
+
             with patch.object(GrabCode, 'copy_all_python_files'):
-                gc_obj = GrabCode('a.not_py')
+                gc_obj = GrabCode(example_dir)
                 test_value = gc_obj._grab_all_python_paths()
                 expected_value = []
                 self.assertEqual(test_value, expected_value)
 
     def test__grab_all_python_paths_empty_dir(self):
-        with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
-            mock_filenames.return_value = []
+        with tempfile.TemporaryDirectory() as example_dir:
 
             with patch.object(GrabCode, 'copy_all_python_files'):
-                gc_obj = GrabCode('dir_name_not_relevant_to_the_test')
+                gc_obj = GrabCode(example_dir)
                 test_value = gc_obj._grab_all_python_paths()
                 expected_value = []
                 self.assertEqual(test_value, expected_value)
@@ -136,29 +136,32 @@ class TestGrabCode(unittest.TestCase):
             GrabCode('example_dir//src')
             mock_cpy.assert_called_with('example_dir/src/a.py', os.path.join(PATH_CODE_COPY_DIR, 'src/a.py'))
 
-    # def test_grab_code_execution(self):
-    #     with patch("src.objects.grab_code.path_utils.get_all_filenames_in_directory") as mock_filenames:
-    #         mock_filenames.return_value = [
-    #             'example_dir/src/a.py',
-    #             'example_dir/src/b.not_py',
-    #             'example_dir/src/temp_dir/a.py',
-    #             'example_dir/src/temp_dir/b.not_py',
-    #             'example_dir/src/temp_dir/one_more_temp_dir/a.py',
-    #             'example_dir/src/temp_dir/one_more_temp_dir/b.not_py'
-    #         ]
-    #         with patch("src.objects.grab_code.path_utils.copy_file_from_to") as mock_cpy:
-    #             gc = GrabCode('/example_dir/src')
-    #             self.assertEqual(gc._base_dir, '/example_dir')
-    #             self.assertEqual(gc._working_dir, PATH_CODE_COPY_DIR)
-    #             # self.assertEqual(gc._grab_all_python_paths(), ['example_dir/src/a.py',
-    #             #                                                'example_dir/src/temp_dir/a.py',
-    #             #                                                'example_dir/src/temp_dir/one_more_temp_dir/a.py'])
-    #             # self.assertEqual(gc._calculate_all_new_python_paths(), [os.path.join("example_dir", PATH_CODE_COPY_DIR, 'src/a.py'),
-    #             #                                                         os.path.join("example_dir", PATH_CODE_COPY_DIR, 'src/temp_dir/a.py'),
-    #             #                                                         os.path.join("example_dir", PATH_CODE_COPY_DIR, 'src/temp_dir/one_more_temp_dir/a.py')])
-    #
-    #             # mock_cpy.assert_has_calls([call('example_dir/a.py',
-    #             #                             os.path.join(PATH_CODE_COPY_DIR, 'a.py'))])
+    def test_grab_code_execution(self):
+        with tempfile.TemporaryDirectory() as dest_dir:
+            with patch("src.objects.grab_code.PATH_CODE_COPY_DIR", dest_dir) as mock_dest_dir:
+                with tempfile.TemporaryDirectory() as src_dir:
+                    open(os.path.join(src_dir, "a.py"), 'w').close()
+                    open(os.path.join(src_dir, "b.not_py"), 'w').close()
+                    temp_dir = tempfile.TemporaryDirectory(dir=src_dir)
+                    open(os.path.join(temp_dir.name, "a.py"), 'w').close()
+                    open(os.path.join(temp_dir.name, "b.not_py"), 'w').close()
+                    one_more_temp_dir = tempfile.TemporaryDirectory(dir=temp_dir.name)
+                    open(os.path.join(one_more_temp_dir.name, "a.py"), 'w').close()
+                    open(os.path.join(one_more_temp_dir.name, "b.not_py"), 'w').close()
+
+                    GrabCode(src_dir)
+
+                    test_dir = os.listdir(dest_dir)[0]
+                    self.assertEqual(test_dir, os.path.basename(src_dir))
+
+                    test_dir = os.path.join(dest_dir, os.path.basename(src_dir))
+                    self.assertEqual(os.listdir(test_dir), ['a.py', os.path.basename(temp_dir.name)])
+
+                    test_dir = os.path.join(test_dir, os.path.basename(temp_dir.name))
+                    self.assertEqual(os.listdir(test_dir), ['a.py', os.path.basename(one_more_temp_dir.name)])
+
+                    test_dir = os.path.join(test_dir, os.path.basename(one_more_temp_dir.name))
+                    self.assertEqual(os.listdir(test_dir), ['a.py'])
 
 
 if __name__ == '__main__':

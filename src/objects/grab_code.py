@@ -3,6 +3,7 @@ from functools import lru_cache
 
 from src.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR
 from src.utils import path_utils
+from src.utils.path_utils import delete_dir
 
 
 def grab_code(src_path):
@@ -13,6 +14,7 @@ def grab_code(src_path):
 class GrabCode:
     def __init__(self, path):
         self._path = path
+        # delete_dir(PATH_FILES_DIR)
         self.copy_all_python_files()
 
     @property
