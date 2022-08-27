@@ -7,6 +7,12 @@ class AbstractObject(abc.ABC):
         self._data = None
 
     def data(self):
+        try:
+            return self._prepare_data()
+        except Exception as e:
+            return f"{e}"
+
+    def _prepare_data(self):
         if self._data:
             return self._data
 
