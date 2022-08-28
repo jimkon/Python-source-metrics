@@ -1,5 +1,7 @@
 import abc
 
+from src.utils.logs import log_red
+
 
 class AbstractObject(abc.ABC):
     def __init__(self, file_strategy=None):
@@ -10,6 +12,7 @@ class AbstractObject(abc.ABC):
         try:
             return self._prepare_data()
         except Exception as e:
+            log_red(str(e))
             return f"{e}"
 
     def _prepare_data(self):
@@ -23,7 +26,7 @@ class AbstractObject(abc.ABC):
             self._data = self.build()
 
             if self._file_strategy and self._data:
-                self._file_strategy.save()
+                self._file_strategy.save(self._data)
 
         return self._data
 

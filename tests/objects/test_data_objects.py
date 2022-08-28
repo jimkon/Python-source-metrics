@@ -23,13 +23,13 @@ class TestAbstractObject(unittest.TestCase):
         self.assertIsNone(obj._data)
         self.assertEqual(obj._prepare_data(), 'build_ret')
         file_strategy.load.assert_called_once()
-        file_strategy.save.assert_called_once()
+        file_strategy.save.assert_called_once_with(obj._data)
         mock_build.assert_called_once()
 
         self.assertEqual(obj._prepare_data(), 'build_ret')
         self.assertIsNotNone(obj._data)
         file_strategy.load.assert_called_once()
-        file_strategy.save.assert_called_once()
+        file_strategy.save.assert_called_once_with(obj._data)
         mock_build.assert_called_once()
 
     @patch.multiple(AbstractObject, __abstractmethods__=set())
