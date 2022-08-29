@@ -4,15 +4,13 @@ import os
 
 from src.configs import PATH_RES_HTML_IMAGE
 from src.html.builder import HTMLBuilder
-from src.utils.storage_mixins import StoreHTMLImageBuilds
 
 
 class HTMLImageBuilder(HTMLBuilder):
     def __init__(self, image_path):
-        super(HTMLImageBuilder, self).__init__()
+        super().__init__("image.html")
         self._image_path = image_path
-        self.build()
-        self.save()
+        self.add_image(image_path)
 
     @property
     def image_path(self):
@@ -23,9 +21,6 @@ class HTMLImageBuilder(HTMLBuilder):
 
     def replace(self, this, with_that):
         self._html_str = self._html_str.replace(this, with_that)
-
-    def build(self):
-        self.add_image(self._image_path)
 
     def add_image(self, image_path, size=None):
         with open(image_path, "rb") as image_file:
@@ -45,8 +40,7 @@ class HTMLImageBuilder(HTMLBuilder):
 
 if __name__ == '__main__':
     # TODO [continue] na treksw ayto
-    # t = HTMLImageBuilder(r"C:\Users\jim\PycharmProjects\Python-source-metrics\files\uml\class_uml.png")
-    t = HTMLImageBuilder().add_image(r"C:\Users\jim\Desktop\download.gif")
+    t = HTMLImageBuilder(r"C:\Users\jim\PycharmProjects\Python-source-metrics\files\uml\class_uml.png")
+    # t = HTMLImageBuilder(r"C:\Users\jim\Desktop\download.gif")
     print(t.html())
-    StoreHTMLImageBuilds(t).save()
 

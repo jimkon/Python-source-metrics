@@ -25,6 +25,7 @@ class HTMLTabsPageBuilder:
         self._add_button(label)
         self._add_div(label, html_content)
 
+    @property
     def html(self):
         self._replace("[button]", '')
         self._replace("[div_tab]", '')
