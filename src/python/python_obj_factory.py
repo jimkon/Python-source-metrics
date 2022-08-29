@@ -4,7 +4,7 @@ from src.python.code_structure import *
 from src.utils.paths import Path
 
 
-class ObjectFactory:
+class PathObjectFactory:
 
     def __init__(self, root_path):
         self._root_path = root_path
@@ -45,4 +45,20 @@ class ObjectFactory:
         path = parent.data.path
         class_method_obj = ClassMethodObj(name, path, code)
         return TreeNode(parent, data=class_method_obj)
+
+
+class DictObjectFactory:
+    def node_dict_to_object(self, name, node_dict):
+        if node_dict['type'] == "directory":
+            return DirectoryObj(name=name, path=None)
+        elif node_dict['type'] == "module":
+            return ModuleObj(name, None, node_dict['code'])
+        elif node_dict['type'] == "class":
+            return ClassObj(name, None, node_dict['code'])
+        elif node_dict['type'] == "function":
+            return FunctionObj(name, None, node_dict['code'])
+        elif node_dict['type'] == "class_method":
+            return ClassMethodObj(name, None, node_dict['code'])
+
+
 
