@@ -148,9 +148,9 @@ class PlantUMLDocument:
 
 
 class UMLClassBuilder(TreeNodeVisitor):
-    def __init__(self):
+    def __init__(self, seperate_packages=True):
         self._packages = {}
-        self._uml_doc = PlantUMLDocument()
+        self._seperate_packages = seperate_packages
 
     def add_package(self, package_name):
         if package_name not in self._packages.keys():
@@ -169,11 +169,27 @@ class UMLClassBuilder(TreeNodeVisitor):
     def visit_class(self, node):
         self.add_class(node)
 
-    def result(self):
+    def all_in_one_doc(self):
+        uml_doc = PlantUMLDocument()
         for package_name, package_dict in self._packages.items():
-            self._uml_doc.add_package(package_name, package_dict)
+            uml_doc.add_package(package_name, package_dict)
 
-        return self._uml_doc.finish_and_return()
+        return uml_doc.finish_and_return()
+
+    def one_doc_per_package(self):
+        uml_docs = []
+        for package_name, package_dict in self._packages.items():
+            uml_doc = PlantUMLDocument()
+            uml_doc.add_package(package_name, package_dict)
+            uml_docs.append(uml_doc.finish_and_return())
+
+        return uml_docs
+
+    def result(self):
+        if self._seperate_packages:
+            return self.one_doc_per_package()
+        else:
+            return self.all_in_one_doc()
 
 
 class UMLClassRelationBuilder(TreeNodeVisitor):
