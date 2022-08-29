@@ -1,6 +1,8 @@
 import argparse
 
-from src.objects.grab_code import GrabCode, grab_code
+from src.objects.full_report import FullReport
+from src.objects.grab_code import grab_code
+from src.objects.python_object import PObject
 from src.python.python_source_obj import PythonSourceObj
 
 
@@ -22,7 +24,9 @@ def main():
     print(args)
     source = args['src']
 
-    print(grab_code(source))
+    grab_code(source)
+
+    FullReport().data()
 
 
 def fetch_and_analyse_source(source_code_path):
