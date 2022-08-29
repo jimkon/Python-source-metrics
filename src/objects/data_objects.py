@@ -13,7 +13,7 @@ class AbstractObject(abc.ABC):
             return self._prepare_data()
         except Exception as e:
             log_red(str(e))
-            return f"{e}"
+            return f"{self.__class__.__name__}: {e}"
 
     def _prepare_data(self):
         if self._data:
