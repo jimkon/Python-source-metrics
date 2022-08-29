@@ -4,7 +4,7 @@ from src.utils.path_utils import load_file_as_string
 from src.utils.paths import Path
 from src.visitors.init_visitor import PythonObjInitializer
 from src.visitors.load_pobj_visitor import LoadObjInitializer
-from src.visitors.store import ConvertPythonSourceObjToDict
+from src.visitors.pobj_to_dict_visitor import ConvertPythonSourceObjToDict
 from src.visitors.visitor import VisitedMixin
 
 
