@@ -32,4 +32,4 @@ PATH_RES_HTML_IMAGE = join(PATH_RES_HTML, "image.html")
 
 PATH_STORE_JOINT_STAT_TABLE_CSV = join(PATH_FILES_DIR, "joint_stats.csv")
 
-VERBOSITY = 3
+VERBOSITY = 2
