@@ -5,6 +5,7 @@ class HTMLPage:
 
     def add(self, element):
         self._html_str = f"{self._html_str}\n<div>{element}</div>"
+        return self
 
     @property
     def html(self):

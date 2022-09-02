@@ -1,4 +1,5 @@
 import os
+import glob
 
 from src.configs import PYTHON_FILE_EXTENSION
 
@@ -81,3 +82,13 @@ def copy_file_from_to(from_path, to_path):
 
     with open(to_path, 'w') as f:
         f.write(file_content_str)
+
+
+def delete_dir(path):
+    files = glob.glob(path, recursive=True)
+
+    for f in files:
+        try:
+            os.remove(f)
+        except OSError as e:
+            print("Error: %s : %s" % (f, e.strerror))

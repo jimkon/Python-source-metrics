@@ -1,10 +1,9 @@
 import os
 
 from src.configs import PATH_CODE_COPY_DIR
-from src.python.python_source_obj import PythonSourceObj
 from src.objects.data_objects import AbstractObject
+from src.python.python_source_obj import PythonSourceObj
 from src.utils.file_strategies import JsonFile
-from src.visitors.pobj_to_dict_visitor import ConvertPythonSourceObjToDict
 
 
 class PObject(AbstractObject):
