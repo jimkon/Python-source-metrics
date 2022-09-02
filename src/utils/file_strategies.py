@@ -4,7 +4,7 @@ import json
 import pandas as pd
 
 from src.configs import PATH_FILES_DIR
-from src.utils.logs import log_yellow
+from src.utils.logs import log_yellow, log_green, log_red, log_pink
 
 
 class AbstractFileStrategy(abc.ABC):
@@ -25,18 +25,18 @@ class AbstractFileStrategy(abc.ABC):
 
     def load(self):
         if self._cached_data:
-            log_yellow(f"{self.__class__.__name__}: File {self.filepath} is cached in memory.")
+            log_green(f"(CACHED) {self.__class__.__name__}: File {self.filepath} is cached in memory.")
             return self._cached_data
         elif os.path.exists(self.filepath):
-            log_yellow(f"{self.__class__.__name__}: File {self.filepath} found in disk.")
+            log_yellow(f"(LOADING) {self.__class__.__name__}: File {self.filepath} found in disk.")
             self._cached_data = self.load_from_file(self.filepath, **self._load_kwargs if self._load_kwargs else {})
             return self._cached_data
         else:
-            log_yellow(f"{self.__class__.__name__}: File {self.filepath} not found.")
+            log_pink(f"(BUILDING) {self.__class__.__name__}: File {self.filepath} not found.")
             return None
 
     def save(self, data):
-        log_yellow(f"{self.__class__.__name__}: File {self.filepath} is created.")
+        log_yellow(f"(STORING) {self.__class__.__name__}: File {self.filepath} is created.")
         self._cached_data = data
         self.save_to_file(data, self.filepath, **self._save_kwargs if self._save_kwargs else {})
 

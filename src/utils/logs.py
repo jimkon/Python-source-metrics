@@ -16,8 +16,16 @@ def log_red(*args, **kwargs):
     log(*args, **kwargs, rgb=(200, 50, 50))
 
 
+def log_pink(*args, **kwargs):
+    log(*args, **kwargs, rgb=(255,105,180))
+
+
 def log_yellow(*args, **kwargs):
     log(*args, **kwargs, rgb=(200, 200, 50))
+
+
+def log_green(*args, **kwargs):
+    log(*args, **kwargs, rgb=(50, 200, 50))
 
 
 def log_cyan(*args, **kwargs):
@@ -33,4 +41,5 @@ if __name__ == "__main__":
     log_red('red')
     log_yellow('yellow')
     log_cyan('cyan')
+    log_green('green')
 

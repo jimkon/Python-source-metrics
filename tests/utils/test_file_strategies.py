@@ -9,10 +9,10 @@ class ExampleObject:
 
 
 class ExampleConcreteFileStrategy(fs.AbstractFileStrategy):
-    def load_from_file(self, filepath):
+    def load_from_file(self, filepath, **kwargs):
         return 'example_data'
 
-    def save_to_file(self, data, filepath):
+    def save_to_file(self, data, filepath, **kwargs):
         pass
 
 
