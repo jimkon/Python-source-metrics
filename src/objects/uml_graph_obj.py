@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+import threading
 
 from src.configs import PATH_FILES_DIR
 from src.html.image_html import HTMLImageBuilder
@@ -21,6 +22,20 @@ def _uml_to_html(temp_dir, uml_doc):
     return HTMLImageBuilder(outfile_name).html
 
 
+class UMLImageThread(threading.Thread):
+    def __init__(self, temp_dir, uml_doc):
+        threading.Thread.__init__(self)
+        self._dir = temp_dir
+        self._uml_doc = uml_doc
+        self._result = None
+
+    def run(self):
+        self._result = _uml_to_html(self._dir, self._uml_doc)
+
+    def result(self):
+        return self._result
+
+
 class UMLClassDiagramObj(AbstractObject):
     def __init__(self):
         super().__init__(HTMLFile(self))
@@ -33,9 +48,22 @@ class UMLClassDiagramObj(AbstractObject):
 
         temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="UMLClassDiagramObj_")
         html_page = HTMLPage()
+
+        # threads = []
+        # for doc in uml_builder.result():
+        #     thread = UMLImageThread(temp_dir, doc)
+        #     thread.start()
+        #     threads.append(thread)
+        #     # html_page.add(html)
+        #
+        # for thread in threads:
+        #     thread.join()
+        #
+        # [html_page.add(thread.result()) for thread in threads]
         for doc in uml_builder.result():
             html = _uml_to_html(temp_dir, doc)
             html_page.add(html)
+
         temp_dir.cleanup()
 
         return html_page.html
