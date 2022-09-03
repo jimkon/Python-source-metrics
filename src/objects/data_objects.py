@@ -4,10 +4,19 @@ import pandas as pd
 
 from src.html.tables.simple_table import SimpleHTMLTable
 from src.utils.file_strategies import DataframeFile, HTMLFile
-from src.utils.logs import log_red
+from src.utils.logs import log_red, log_green
 
 
-class AbstractObject(abc.ABC):
+class SingletonClass(object):
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(SingletonClass, cls).__new__(cls)
+        else:
+            log_green(f"(CACHED) Object {cls.__name__} is already initialized.")
+        return cls.instance
+
+
+class AbstractObject(SingletonClass, abc.ABC):
     def __init__(self, file_strategy=None):
         self._file_strategy = file_strategy
         self._data = None
