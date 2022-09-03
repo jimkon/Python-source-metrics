@@ -20,7 +20,6 @@ def read_args():
     return args
 
 
-@cprofile
 def main():
     args = read_args()
     print(args)
