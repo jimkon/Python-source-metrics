@@ -10,6 +10,7 @@ from src.objects.data_objects import AbstractObject
 from src.objects.python_object import PObject
 from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder
 from src.utils.file_strategies import HTMLFile
+from src.utils.logs import log_pink
 from src.utils.uml_utils import produce_uml_diagram_from_text_file
 
 
@@ -34,9 +35,9 @@ class UMLImageThread(threading.Thread):
     def run(self):
         import random
         id = random.randint(0, 1000)
-        print(f'Thread {id} started')
+        log_pink(f'Thread {id} started')
         self._result = _uml_to_html(self._dir, self._uml_doc)
-        print(f'-Thread {id} finished')
+        log_pink(f'-Thread {id} finished')
 
     def result(self):
         return self._result
@@ -89,7 +90,7 @@ class UMLClassRelationDiagramObj(AbstractObject):
         uml_builder = UMLClassRelationBuilder()
         pobj.use_visitor(uml_builder)
 
-        temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="UMLClassDiagramObj_")
+        temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="UMLClassRelationDiagramObj_")
         html_page = HTMLPage()
         html = _uml_to_html(temp_dir, uml_builder.result())
         html_page.add(html)

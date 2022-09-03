@@ -1,10 +1,11 @@
 import abc
-import os
 import json
+import os
+
 import pandas as pd
 
 from src.configs import PATH_FILES_DIR
-from src.utils.logs import log_yellow, log_green, log_red, log_pink
+from src.utils.logs import log_yellow, log_green, log_pink
 
 
 class AbstractFileStrategy(abc.ABC):
