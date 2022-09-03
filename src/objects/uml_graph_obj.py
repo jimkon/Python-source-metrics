@@ -14,10 +14,12 @@ from src.utils.uml_utils import produce_uml_diagram_from_text_file
 
 
 def _uml_to_html(temp_dir, uml_doc):
-    with open(os.path.join(temp_dir.name, "temp_uml_text_file.txt"), 'w') as temp_uml_text_file:
-        temp_uml_text_file.write(uml_doc)
-    outfile_name = f"{temp_uml_text_file.name}.png"
-    produce_uml_diagram_from_text_file(temp_uml_text_file.name,
+    temp_file = tempfile.NamedTemporaryFile(suffix="_temp_uml_text_file.txt", dir=temp_dir.name, delete=False)
+    with open(temp_file.name, 'w') as f:
+        f.write(uml_doc)
+
+    infile_name, outfile_name = temp_file.name, f"{temp_file.name}.png"
+    produce_uml_diagram_from_text_file(infile_name,
                                        output_path=outfile_name)
     return HTMLImageBuilder(outfile_name).html
 
@@ -30,7 +32,11 @@ class UMLImageThread(threading.Thread):
         self._result = None
 
     def run(self):
+        import random
+        id = random.randint(0, 1000)
+        print(f'Thread {id} started')
         self._result = _uml_to_html(self._dir, self._uml_doc)
+        print(f'-Thread {id} finished')
 
     def result(self):
         return self._result
@@ -49,20 +55,24 @@ class UMLClassDiagramObj(AbstractObject):
         temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="UMLClassDiagramObj_")
         html_page = HTMLPage()
 
-        # threads = []
-        # for doc in uml_builder.result():
-        #     thread = UMLImageThread(temp_dir, doc)
-        #     thread.start()
-        #     threads.append(thread)
-        #     # html_page.add(html)
-        #
-        # for thread in threads:
-        #     thread.join()
-        #
-        # [html_page.add(thread.result()) for thread in threads]
+        # ******* MULTITHREADING SOLUTION *******
+        threads = []
         for doc in uml_builder.result():
-            html = _uml_to_html(temp_dir, doc)
-            html_page.add(html)
+            thread = UMLImageThread(temp_dir, doc)
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        [html_page.add(thread.result()) for thread in threads]
+        # ***************************************
+
+        # ******* SEQUENTIAL EXECUTION *******
+        # for doc in uml_builder.result():
+        #     html = _uml_to_html(temp_dir, doc)
+        #     html_page.add(html)
+        # ************************************
 
         temp_dir.cleanup()
 
