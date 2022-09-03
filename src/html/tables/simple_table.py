@@ -32,27 +32,19 @@ class HTMLTableBuilder:
         return self._html_str
 
 
-class SimpleHTMLTableBuilder(StoreText):
-    def __init__(self, csv_path):
-        self._html_path = csv_path+".html"
-        self._df = pd.read_csv(csv_path)
+class SimpleHTMLTable:
+    def __init__(self, df, title=''):
+        self._df = df
 
-        self._html_builder = HTMLTableBuilder(csv_path)
+        self._html_builder = HTMLTableBuilder(title)
         self._html_builder.add_column_names(self._df.columns)
         for row in self._df.iterrows():
             self._html_builder.add_row(row[1].values)
 
-        self.save()
-
+    @property
     def html(self):
         return self._html_builder.html()
 
-    def data_to_store(self):
-        return self.html()
 
-    def path_to_store(self):
-        return self._html_path
-
-
-if __name__ == '__main__':
-    SimpleHTMLTableBuilder(PATH_STORE_JOINT_STAT_TABLE_CSV)
+# if __name__ == '__main__':
+#     SimpleHTMLTableBuilder(PATH_STORE_JOINT_STAT_TABLE_CSV)

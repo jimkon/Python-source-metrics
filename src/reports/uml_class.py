@@ -1,6 +1,7 @@
 import ast
 from functools import cached_property, lru_cache
 
+from src.python.python_source_obj import PythonSourceObj
 from src.utils.storage_mixins import StoreClassUML, StoreClassRelationUML
 from src.visitors.visitor import TreeNodeVisitor
 
@@ -53,8 +54,8 @@ class UMLClass:
 
     @cached_property
     def is_abstract(self):
-        if self.name == 'StoreData':
-            k = 1
+        # if self.name == 'StoreData':
+        #     k = 1
         for superclass in self.inheritances:
             if superclass[-3:] == 'ABC':
                 return True
@@ -146,10 +147,10 @@ class PlantUMLDocument:
         return self._res_string
 
 
-class UMLClassBuilder(StoreClassUML):
-    def __init__(self):
+class UMLClassBuilder(TreeNodeVisitor):
+    def __init__(self, seperate_packages=True):
         self._packages = {}
-        self._uml_doc = PlantUMLDocument()
+        self._seperate_packages = seperate_packages
 
     def add_package(self, package_name):
         if package_name not in self._packages.keys():
@@ -165,14 +166,33 @@ class UMLClassBuilder(StoreClassUML):
         self.add_module(c.module_name, c.package_name)
         self._packages[c.package_name][c.module_name].append(c)
 
-    def data_to_store(self):
+    def visit_class(self, node):
+        self.add_class(node)
+
+    def all_in_one_doc(self):
+        uml_doc = PlantUMLDocument()
         for package_name, package_dict in self._packages.items():
-            self._uml_doc.add_package(package_name, package_dict)
+            uml_doc.add_package(package_name, package_dict)
 
-        return self._uml_doc.finish_and_return()
+        return uml_doc.finish_and_return()
+
+    def one_doc_per_package(self):
+        uml_docs = []
+        for package_name, package_dict in self._packages.items():
+            uml_doc = PlantUMLDocument()
+            uml_doc.add_package(package_name, package_dict)
+            uml_docs.append(uml_doc.finish_and_return())
+
+        return uml_docs
+
+    def result(self):
+        if self._seperate_packages:
+            return self.one_doc_per_package()
+        else:
+            return self.all_in_one_doc()
 
 
-class UMLClassRelationBuilder(StoreClassRelationUML):
+class UMLClassRelationBuilder(TreeNodeVisitor):
     def __init__(self):
         self._uml_doc = PlantUMLDocument()
 
@@ -184,20 +204,21 @@ class UMLClassRelationBuilder(StoreClassRelationUML):
                 continue
             self._uml_doc.add_class_superclass_of_class(superclass, c.name)
 
-    def data_to_store(self):
+    def visit_class(self, node):
+        self.add_class(node)
+
+    def result(self):
         return self._uml_doc.finish_and_return()
 
 
-class UMLClassDiagramVisitor(TreeNodeVisitor):
-    def __init__(self):
-        self._uml_class = UMLClassBuilder()
-        self._uml_relation = UMLClassRelationBuilder()
+if __name__ == "__main__":
+    src_path = r"C:\Users\jim\PycharmProjects\Python-source-metrics\report_files\code_copy\rl"
+    ps = PythonSourceObj(src_path)
+    uml_class_vis = UMLClassBuilder()
+    ps.use_visitor(uml_class_vis)
+    print(uml_class_vis.result())
 
-    def visit_class(self, node):
-        self._uml_class.add_class(node)
-        self._uml_relation.add_class(node)
-
-    def save(self):
-        self._uml_class.save()
-        self._uml_relation.save()
+    uml_class_rel = UMLClassRelationBuilder()
+    ps.use_visitor(uml_class_rel)
+    print(uml_class_rel.result())
 
