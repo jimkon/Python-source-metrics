@@ -6,24 +6,25 @@ from git import Repo
 
 from src.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR
 from src.utils import path_utils
-from src.utils.logs import log_yellow, log_cyan, log_red
+from src.utils.logs import log_yellow, log_cyan, log_red, log_pink
 from src.utils.path_utils import delete_dir
 from src.utils.python_file_utils import find_source_dirs
 
 
+def is_git_url(url):
+    if url.startswith("https://github.com/") and url.endswith(".git"):
+        return True
+    return False
+
+
 def grab_code(path):
-    if os.path.isdir(path):
-        gc = CopyCode(path)
+    if is_git_url(path):
+        with tempfile.TemporaryDirectory(prefix="git_clone_") as temp_dir:
+            log_pink(f"Cloning repo: {path} ...")
+            Repo.clone_from(path, temp_dir)
+            CopyCode.extract_all_source_dirs_from_path(temp_dir)
     else:
-        grab_repo(path)
-    return PATH_FILES_DIR
-
-
-def grab_repo(git_url):
-    "https://github.com/scikit-learn/scikit-learn.git"
-    with tempfile.TemporaryDirectory() as temp_dir:
-        Repo.clone_from(git_url, temp_dir)
-        CopyCode(temp_dir)
+        CopyCode.extract_all_source_dirs_from_path(os.path.dirname(path))
     return PATH_FILES_DIR
 
 
