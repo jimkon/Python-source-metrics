@@ -30,6 +30,7 @@ class UMLClass:
 
     @cached_property
     def name_plus_inheritances(self):
+        print(self.inheritances)
         inheritances_str = f"({','.join(self.inheritances)})" if len(self.inheritances)>0 else ''
         return f"{self._class_def.name}{inheritances_str}"
 
@@ -43,19 +44,23 @@ class UMLClass:
 
     @cached_property
     def inheritances(self):
+        def fetch_id(_base_var):
+            if isinstance(_base_var, ast.Attribute):
+                return f"{fetch_id(_base_var.value)}_{_base_var.attr}"
+            elif isinstance(_base_var, ast.Name):
+                return f"{_base_var.id}"
+            else:
+                return f"{_base_var}"
+
         bases = self._class_def.bases
         res = []
         for base in bases:
-            if hasattr(base, 'id'):
-                res.append(base.id)
-            elif hasattr(base, 'value'):
-                res.append(f"{base.value.id}_{base.attr}")
+            base_id = fetch_id(base)
+            res.append(base_id)
         return res
 
     @cached_property
     def is_abstract(self):
-        # if self.name == 'StoreData':
-        #     k = 1
         for superclass in self.inheritances:
             if superclass[-3:] == 'ABC':
                 return True
