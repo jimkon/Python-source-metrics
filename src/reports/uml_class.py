@@ -30,7 +30,6 @@ class UMLClass:
 
     @cached_property
     def name_plus_inheritances(self):
-        print(self.inheritances)
         inheritances_str = f"({','.join(self.inheritances)})" if len(self.inheritances)>0 else ''
         return f"{self._class_def.name}{inheritances_str}"
 
@@ -50,7 +49,7 @@ class UMLClass:
             elif isinstance(_base_var, ast.Name):
                 return f"{_base_var.id}"
             else:
-                return f"{_base_var}"
+                return f"UNKNOWN_BASE"
 
         bases = self._class_def.bases
         res = []
