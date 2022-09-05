@@ -20,9 +20,15 @@ def _uml_to_html(temp_dir, uml_doc):
         f.write(uml_doc)
 
     infile_name, outfile_name = temp_file.name, f"{temp_file.name}.png"
-    produce_uml_diagram_from_text_file(infile_name,
-                                       output_path=outfile_name)
-    return HTMLImageBuilder(outfile_name).html
+
+    try:
+        produce_uml_diagram_from_text_file(infile_name,
+                                           output_path=outfile_name)
+        return HTMLImageBuilder(outfile_name).html
+    except Exception as e:
+        return f"<div>The following error occurred while processing the doc:" \
+               f"<br>{uml_doc}" \
+               f"<br>{e}</div>"
 
 
 class UMLImageThread(threading.Thread):

@@ -1,5 +1,6 @@
 from src.python.basic_structure import TreeNode
 from src.python.python_obj_factory import PathObjectFactory, DictObjectFactory
+from src.utils.logs import log_cyan
 from src.utils.path_utils import load_file_as_string
 from src.utils.paths import Path
 from src.visitors.init_visitor import PythonObjInitializer
@@ -26,6 +27,7 @@ class PythonSourceObj(VisitedMixin):
 
     @staticmethod
     def from_project_source(abspath):
+        log_cyan(f"Creating Python Source Object from path: {abspath}")
         abspath = Path(abspath)
         obj_factory = PathObjectFactory(abspath)
 
