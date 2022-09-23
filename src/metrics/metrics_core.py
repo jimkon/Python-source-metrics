@@ -1,11 +1,10 @@
 import abc
-import os.path
 
 import pandas as pd
 
-from src.configs import PATH_STORE_METRIC_RESULTS_DIR
+from src.objects.data_objects import DataframeObject
+from src.objects.python_object import PObject
 from src.utils.logs import log_yellow
-from src.utils.storage_mixins import StoreCSV
 from src.visitors.visitor import TreeNodeVisitor
 
 """
@@ -15,7 +14,7 @@ To add a new metric:
 """
 
 
-class CalculateMetricVisitor(TreeNodeVisitor, StoreCSV):
+class CalculateMetricVisitor(TreeNodeVisitor):
     def __init__(self, metric):
         self._metric = metric
         self._results = {}
@@ -48,23 +47,9 @@ class CalculateMetricVisitor(TreeNodeVisitor, StoreCSV):
     def visit_class_method(self, node):
         self._set_value_for_obj(node.data, self._metric.calculate_class_method(node.data))
 
-    @property
     def results(self):
-        return self._results
-
-    def path_to_store(self):
-        return os.path.join(PATH_STORE_METRIC_RESULTS_DIR, self._metric.name + '.csv')
-
-    def data_to_store(self):
-        results_t = {
-            'name': self.results.keys(),
-            'value': self.results.values()
-        }
-        df = pd.DataFrame(results_t)
-        return df
-
-    def done(self):
-        self.save()
+        data_array = list(self._results.items())
+        return pd.DataFrame.from_records(data_array, columns=['item', self._metric.name])
 
 
 class Metric(abc.ABC):
@@ -89,7 +74,13 @@ class Metric(abc.ABC):
         pass
 
 
-class TypeMetric(Metric):
-    name = 'type'
-    def calculate(self, p_obj, **kwargs):
-        return p_obj.type
+class MetricObject(DataframeObject, Metric):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        pobj = PObject().python_source_object()
+        metrics_vis = CalculateMetricVisitor(self)
+        pobj.use_visitor(metrics_vis)
+        res = metrics_vis.results()
+        return res
