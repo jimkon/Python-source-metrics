@@ -2,6 +2,7 @@ import pandas as pd
 
 from src.metrics.import_metrics import enrich_import_raw_df
 from src.objects.data_objects import DataframeObject, HTMLTableObject
+from src.objects.metric_obj import IsScriptFile
 from src.objects.python_object import PObject
 from src.reports.import_graph import CollectImportsVisitor
 
@@ -24,6 +25,10 @@ class ImportsEnrichedDataframe(DataframeObject):
     def build(self):
         df = ImportsRawDataframe().data()
         df_enriched = enrich_import_raw_df(df)
+        df_enriched = df_enriched.merge(IsScriptFile().data(),
+                                        left_on='module',
+                                        right_on='item',
+                                        how='left').drop(columns=['item'])
         return df_enriched
 
 
@@ -63,7 +68,7 @@ class MostImportedProjectPackages(HTMLTableObject):
 class UnusedModules(HTMLTableObject):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
-        return df[df['unused_module']][['module']].drop_duplicates()
+        return df[df['unused_module']][['module', 'is_script_file']].drop_duplicates()
 
 
 class InvalidImports(HTMLTableObject):
