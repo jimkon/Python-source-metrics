@@ -1,13 +1,9 @@
-import tempfile
-
-from src.configs import PATH_FILES_DIR
 from src.html.pages.page import HTMLPage
 from src.objects.data_objects import AbstractObject
 from src.objects.python_object import PObject
 from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder
 from src.utils.file_strategies import HTMLFile
-from src.utils.plantuml_utils import PlantUMLImageProductionThread, plantuml_doc_to_html_image, \
-    produce_plantuml_diagrams_in_html_images_multithreading, produce_plantuml_diagrams_in_html_images
+from src.utils.plantuml_utils import produce_plantuml_diagrams_in_html_images_multithreading, produce_plantuml_diagrams_in_html_images
 
 
 class UMLClassDiagramObj(AbstractObject):
