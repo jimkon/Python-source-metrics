@@ -3,7 +3,6 @@ from src.html.pages.page import HTMLPage
 from src.objects.data_objects import AbstractObject
 from src.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages
-from src.objects.metric_obj import TypeMetricObj, NumberOfCodeLinesMetricObj
 from src.objects.metric_tables import AllMetricsTable
 from src.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj
 from src.utils.file_strategies import HTMLFile

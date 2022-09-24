@@ -2,7 +2,7 @@ import pandas as pd
 
 from src.metrics.import_metrics import enrich_import_raw_df
 from src.objects.data_objects import DataframeObject, HTMLTableObject
-from src.objects.metric_obj import IsScriptFile
+from src.objects.metric_obj import IsScriptFile, TypeMetricObj
 from src.objects.python_object import PObject
 from src.reports.import_graph import CollectImportsVisitor
 
@@ -24,6 +24,7 @@ class ImportsEnrichedDataframe(DataframeObject):
 
     def build(self):
         df = ImportsRawDataframe().data()
+
         df_enriched = enrich_import_raw_df(df)
         df_enriched = df_enriched.merge(IsScriptFile().data(),
                                         left_on='module',
