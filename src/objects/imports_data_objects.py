@@ -30,6 +30,7 @@ class ImportsEnrichedDataframe(DataframeObject):
                                         left_on='module',
                                         right_on='item',
                                         how='left').drop(columns=['item'])
+
         return df_enriched
 
 
@@ -69,6 +70,7 @@ class MostImportedProjectPackages(HTMLTableObject):
 class UnusedModules(HTMLTableObject):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
+        df = df[df['module_name'] != '__init__']
         return df[df['unused_module']][['module', 'is_script_file']].drop_duplicates()
 
 
