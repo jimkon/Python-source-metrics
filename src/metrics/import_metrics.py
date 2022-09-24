@@ -1,13 +1,32 @@
 def enrich_import_raw_df(df):
+    # takes an imported path e.x "a.b.c" and keeps only the first component "a"
     df['import_root'] = df['imports'].apply(import_root)
+
+    # finds the root path of all the module paths
     project_root = common_root(df['module'])
+
+    # finds the imports referring to in-project modules check if import root is project root
     df['is_project_module'] = df['import_root'].apply(lambda x: x == project_root)
+
+    # finds the module import path for in-project imports
     df['import_module'] = df['imports'].apply(lambda x: element_with_longest_match(x, df['module'].unique()))
+
+    # calculate the depth of a module path
     df['module_depth'] = df['module'].apply(lambda x: len(breakdown_import_path(x)))
+
+    # check if imported in-project module exists and therefore if it is an valid import path
     df['invalid_import'] = df['is_project_module'] & df['import_module'].isna()
+
+    # check if a module is imported anywhere in the project
     df['unused_module'] = ~df['module'].isin(df['import_module'])
+
+    # keeps only the name of the module ex "a.b.c" -> "c"
     df['module_name'] = df['module'].apply(module_name)
+
+    # finds the package path of each module
     df['package'] = df['module'].apply(lambda x: '.'.join(breakdown_import_path(x)[:-1]))
+
+    # finds the package path of each in-project import
     df['import_package'] = df['import_module'].apply(lambda x: element_with_longest_match(x, df['package'].unique()))
     return df
 
