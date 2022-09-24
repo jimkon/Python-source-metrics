@@ -11,7 +11,7 @@ from src.objects.python_object import PObject
 from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder
 from src.utils.file_strategies import HTMLFile
 from src.utils.logs import log_pink
-from src.utils.uml_utils import produce_uml_diagram_from_text_file
+from src.utils.plantuml_utils import produce_uml_diagram_from_text_file
 
 
 def _uml_to_html(temp_dir, uml_doc):
