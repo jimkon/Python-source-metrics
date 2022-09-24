@@ -2,15 +2,14 @@ import abc
 
 import pandas as pd
 
-from src.html.tables.simple_table import SimpleHTMLTable
 from src.utils.file_strategies import DataframeFile, HTMLFile
-from src.utils.logs import log_red, log_green
+from src.utils.logs import log_green, log_obj_stage
 
 
 class SingletonClass(object):
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(SingletonClass, cls).__new__(cls)
+            cls.instance = super(SingletonClass, cls).__new__(cls, *args, **kwargs)
         else:
             log_green(f"(CACHED) Object {cls.__name__} is already initialized.")
         return cls.instance
@@ -36,7 +35,9 @@ class AbstractObject(SingletonClass, abc.ABC):
             self._data = self._file_strategy.load()
 
         if self._data is None:
+            log_obj_stage(f"{self.__class__.__name__} object is building.")
             self._data = self.build()
+            log_obj_stage(f"{self.__class__.__name__} object finished.")
 
             if self._file_strategy and self._data is not None:# if self._data breaks in Dataframes
                 self._file_strategy.save(self._data)
