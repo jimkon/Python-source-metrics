@@ -93,7 +93,7 @@ class InProjectImportModuleGraphDataframe(DataframeObject):
         return df_graph
 
 
-class ComPackagesImportModuleGraphDataframe(DataframeObject):
+class PackagesImportModuleGraphDataframe(DataframeObject):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
 
@@ -113,4 +113,4 @@ if __name__ == "__main__":
     # UnusedModules().data()
     # InvalidImports().data()
     InProjectImportModuleGraphDataframe().data()
-    ComPackagesImportModuleGraphDataframe().data()
+    PackagesImportModuleGraphDataframe().data()

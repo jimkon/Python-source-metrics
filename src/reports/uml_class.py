@@ -1,8 +1,9 @@
 import ast
 from functools import cached_property, lru_cache
 
+import pandas as pd
+
 from src.python.python_source_obj import PythonSourceObj
-from src.utils.storage_mixins import StoreClassUML, StoreClassRelationUML
 from src.visitors.visitor import TreeNodeVisitor
 
 
@@ -146,6 +147,13 @@ class PlantUMLDocument:
     def add_class_superclass_of_class(self, superclass_name, subclass_name):
         self._add_line(f"{superclass_name} <|-- {subclass_name}")
 
+    def add_object(self, object_name):
+        self._add_line(f"object {object_name}")
+
+    def add_object_relation(self, obj1, obj2, relation_str='-->'):
+        self._add_line(f"{obj1} {relation_str} {obj2}")
+
+
     def finish_and_return(self):
         self._end_uml()
         return self._res_string
@@ -215,14 +223,32 @@ class UMLClassRelationBuilder(TreeNodeVisitor):
         return self._uml_doc.finish_and_return()
 
 
+class ObjectRelationGraphBuilder:
+    def __init__(self, rels_list):
+        self._left_objs = list(map(lambda x: x[0], rels_list))
+        self._right_objs = list(map(lambda x: x[1], rels_list))
+
+        self._all_objs = set(self._left_objs).union(set(self._right_objs))
+
+        self._uml_doc = PlantUMLDocument()
+        self.add_objects()
+        self.add_relations()
+
+    def add_objects(self):
+        for obj in self._all_objs:
+            self._uml_doc.add_object(obj)
+        return self
+
+    def add_relations(self):
+        for left, right in zip(self._left_objs, self._right_objs):
+            self._uml_doc.add_object_relation(left, right)
+        return self
+
+    def result(self):
+        return self._uml_doc.finish_and_return()
+
+
 if __name__ == "__main__":
-    src_path = r"C:\Users\jim\PycharmProjects\Python-source-metrics\report_files\code_copy\rl"
-    ps = PythonSourceObj(src_path)
-    uml_class_vis = UMLClassBuilder()
-    ps.use_visitor(uml_class_vis)
-    print(uml_class_vis.result())
-
-    uml_class_rel = UMLClassRelationBuilder()
-    ps.use_visitor(uml_class_rel)
-    print(uml_class_rel.result())
-
+    df = pd.read_csv(r"C:\Users\jim\PycharmProjects\Python-source-metrics\report_files\objs\ComPackagesImportModuleGraphDataframe.csv")
+    res = ObjectRelationGraphBuilder(df.values.tolist()).result()
+    print(res)

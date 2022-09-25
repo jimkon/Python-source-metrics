@@ -1,9 +1,11 @@
 from src.html.pages.page import HTMLPage
 from src.objects.data_objects import AbstractObject
+from src.objects.imports_data_objects import InProjectImportModuleGraphDataframe, PackagesImportModuleGraphDataframe
 from src.objects.python_object import PObject
-from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder
+from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder
 from src.utils.file_strategies import HTMLFile
-from src.utils.plantuml_utils import produce_plantuml_diagrams_in_html_images_multithreading, produce_plantuml_diagrams_in_html_images
+from src.utils.plantuml_utils import produce_plantuml_diagrams_in_html_images_multithreading, \
+    produce_plantuml_diagrams_in_html_images
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -55,6 +57,26 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
+class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
+    def plantuml_docs(self):
+        df = InProjectImportModuleGraphDataframe().data()
+        plantuml_doc_strings = ObjectRelationGraphBuilder(df.values.tolist()).result()
+        return plantuml_doc_strings
+
+
+class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
+    def plantuml_docs(self):
+        df = PackagesImportModuleGraphDataframe().data()
+
+        plantuml_doc_strings = []
+        for package in df['import_root'].unique():
+            doc = ObjectRelationGraphBuilder(df[df['import_root']==package].values.tolist()).result()
+            plantuml_doc_strings.append(doc)
+        return plantuml_doc_strings
+
+
 if __name__ == '__main__':
     UMLClassDiagramObj().data()
     UMLClassRelationDiagramObj().data()
+    InProjectImportModuleGraphObj().data()
+    PackagesImportModuleGraphObj().data()
