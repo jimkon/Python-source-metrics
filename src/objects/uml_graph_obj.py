@@ -70,7 +70,7 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
 
         plantuml_doc_strings = []
         for package in df['import_root'].unique():
-            doc = ObjectRelationGraphBuilder(df[df['import_root']==package].values.tolist()).result()
+            doc = ObjectRelationGraphBuilder(df[df['import_root'] == package].values.tolist()).result()
             plantuml_doc_strings.append(doc)
         return plantuml_doc_strings
 
