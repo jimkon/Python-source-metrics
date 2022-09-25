@@ -81,10 +81,36 @@ class InvalidImports(HTMLTableObject):
         return filtered_df[['module', 'imports']]
 
 
+class InProjectImportModuleGraphDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df = ImportsEnrichedDataframe().data()
+
+        df_graph = df[df['is_project_module']][['module', 'import_module']].drop_duplicates()
+
+        return df_graph
+
+
+class PackagesImportModuleGraphDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df = ImportsEnrichedDataframe().data()
+
+        df_graph = df[~(df['is_project_module']) & ~(df['imports'] == 'no-imports')][['module', 'import_root']].drop_duplicates()
+
+        return df_graph
+
+
 if __name__ == "__main__":
-    ImportsEnrichedDataframe().data()
-    MostImportedPackages().data()
-    MostImportedProjectModules().data()
-    MostImportedProjectPackages().data()
-    UnusedModules().data()
-    InvalidImports().data()
+    # ImportsEnrichedDataframe().data()
+    # MostImportedPackages().data()
+    # MostImportedProjectModules().data()
+    # MostImportedProjectPackages().data()
+    # UnusedModules().data()
+    # InvalidImports().data()
+    InProjectImportModuleGraphDataframe().data()
+    PackagesImportModuleGraphDataframe().data()

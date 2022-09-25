@@ -37,6 +37,10 @@ def log_obj_stage(*args, **kwargs):
     log(*args, **kwargs)
 
 
+def log_plantuml(*args, **kwargs):
+    log_pink(*args, **kwargs)
+
+
 if __name__ == "__main__":
     log('test')
     log('test', rgb=(255, 0, 0))

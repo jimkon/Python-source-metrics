@@ -4,7 +4,8 @@ from src.objects.data_objects import AbstractObject
 from src.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages
 from src.objects.metric_tables import AllMetricsTable
-from src.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj
+from src.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, InProjectImportModuleGraphObj, \
+    PackagesImportModuleGraphObj
 from src.utils.file_strategies import HTMLFile
 
 
@@ -27,6 +28,10 @@ class FullReport(AbstractObject):
         html_builder.add_tab("Metrics table", HTMLPage()
                              .add(AllMetricsTable().data())
                              .html)
+
+        html_builder.add_tab("In project Import graphs", InProjectImportModuleGraphObj().data())
+
+        html_builder.add_tab("Package Import graphs", PackagesImportModuleGraphObj().data())
 
         return html_builder.html
 

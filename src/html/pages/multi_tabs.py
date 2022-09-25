@@ -24,6 +24,7 @@ class HTMLTabsPageBuilder:
     def add_tab(self, label, html_content):
         self._add_button(label)
         self._add_div(label, html_content)
+        return self
 
     @property
     def html(self):
