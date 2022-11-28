@@ -1,7 +1,9 @@
-from src.metrics.code_obj_metrics import NumberOfCodeLinesMetric, NumberOfArgsInFunctionsMetric
+from src.objects.metric_obj import *
 
 ALL_METRICS = [
-    NumberOfCodeLinesMetric(),
-    NumberOfArgsInFunctionsMetric()
+    TypeMetricObj,
+    NumberOfCodeLinesMetricObj,
+    NumberOfArgsInFunctionsMetricObj,
+    IsScriptFile
 ]
 

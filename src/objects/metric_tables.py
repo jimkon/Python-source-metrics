@@ -1,16 +1,45 @@
-from src.objects.data_objects import HTMLTableObject
-from src.objects.metric_obj import *
+import tempfile
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from src.html.image_html import HTMLImageBuilder
+from src.objects.metric_obj import NumberOfCodeLinesHistogram, TypeMetricValueCountsTable, GeneralItemMetricHTMLTable, \
+    FunctionArgsHistogram
+
+plt.style.use('bmh')
+
+from src.html.pages.page import HTMLPage
+from src.metrics.metric_sets import ALL_METRICS
+from src.objects.data_objects import HTMLTableObject, DataframeObject, HTMLObject
+
+
+class AllMetricsDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df = ALL_METRICS[0]().data()
+
+        for metric_obj in ALL_METRICS[1:]:
+            df = df.merge(metric_obj().data(), on='item', how='left')
+
+        return df
 
 
 class AllMetricsTable(HTMLTableObject):
     def build_dataframe(self):
-        type_metrics_df = TypeMetricObj().data()
+        return AllMetricsDataframe().data()
 
-        return type_metrics_df\
-            .merge(NumberOfCodeLinesMetricObj().data(), on='item', how='left') \
-            .merge(NumberOfArgsInFunctionsMetricObj().data(), on='item', how='left') \
-            .merge(IsScriptFile().data(), on='item', how='left')
+
+class AllMetricsStatsHTML(HTMLObject):
+    def build(self):
+        page = HTMLPage()
+        page.add(GeneralItemMetricHTMLTable().data())
+        page.add(NumberOfCodeLinesHistogram().data())
+        page.add(FunctionArgsHistogram().data())
+        return page.html
 
 
 if __name__ == '__main__':
-    AllMetricsTable().data()
+    AllMetricsStatsHTML().data()
