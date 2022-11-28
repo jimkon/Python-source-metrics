@@ -1,6 +1,9 @@
 import ast
 
 import matplotlib.pyplot as plt
+
+from src.utils.plots import plot_hist_and_quartiles
+
 plt.style.use('bmh')
 
 from src.metrics.metrics_core import MetricObject
@@ -80,14 +83,15 @@ class NumberOfCodeLinesHistogram(MatplotlibGraphMetricObj):
         df_types = TypeMetricObj().data()
         df = df_types.merge(df_lines, on='item', how='left')
 
-        plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(12, 5))
 
         for i, type in enumerate(['module', 'class', 'function', 'class_method']):
             plt.subplot(1, 4, i+1)
             plt.xlabel(type)
             if i == 0:
                 plt.ylabel('number_of_lines')
-            plt.boxplot(df[df['type'] == type]['number_of_lines'])
+            # plt.boxplot(df[df['type'] == type]['number_of_lines'])
+            plot_hist_and_quartiles(df[df['type'] == type]['number_of_lines'])
         plt.tight_layout()
 
 
@@ -117,14 +121,15 @@ class FunctionArgsHistogram(MatplotlibGraphMetricObj):
         df_types = TypeMetricObj().data()
         df = df_types.merge(df_args, on='item', how='left')
 
-        plt.figure(figsize=(5, 5))
+        plt.figure(figsize=(8, 5))
 
         for i, type in enumerate(['function', 'class_method']):
             plt.subplot(1, 2, i + 1)
             plt.xlabel(type)
             if i == 0:
                 plt.ylabel('number_of_args_in_functions')
-            plt.boxplot(df[df['type'] == type]['number_of_args_in_functions'])
+            # plt.boxplot(df[df['type'] == type]['number_of_args_in_functions'])
+            plot_hist_and_quartiles(df[df['type'] == type]['number_of_args_in_functions'])
         plt.tight_layout()
 
 
