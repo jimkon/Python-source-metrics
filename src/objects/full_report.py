@@ -1,5 +1,4 @@
-from src.html.pages.multi_tabs import HTMLTabsPageBuilder
-from src.html.pages.page import HTMLPage
+from src.html.html_pages import HTMLPage, TabsHTML
 from src.objects.data_objects import AbstractObject
 from src.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages
@@ -14,7 +13,7 @@ class FullReport(AbstractObject):
         super().__init__(HTMLFile(self))
 
     def build(self):
-        html_builder = HTMLTabsPageBuilder()
+        html_builder = TabsHTML()
         html_builder.add_tab("UML Class diagram", UMLClassDiagramObj().data())
         html_builder.add_tab("UML Relation diagram", UMLClassRelationDiagramObj().data())
         html_builder.add_tab("Imports table", HTMLPage()
