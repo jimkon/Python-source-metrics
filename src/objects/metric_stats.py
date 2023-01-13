@@ -2,10 +2,10 @@ import abc
 import os
 import tempfile
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
-from src.html.image_html import HTMLImageBuilder
+from src.html.html_pages import ImageHTML
 from src.objects.data_objects import HTMLTableObject, HTMLObject
 
 
@@ -30,7 +30,7 @@ class MatplotlibGraphMetricObj(HTMLObject, abc.ABC):
         self.build_plot()
         plt.savefig(tmp_file.name)
 
-        res_image_html = HTMLImageBuilder(tmp_file.name).html
+        res_image_html = ImageHTML.from_image_file(tmp_file.name).html()
 
         tmp_file.close()
         os.unlink(tmp_file.name)

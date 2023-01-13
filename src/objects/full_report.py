@@ -1,9 +1,7 @@
-from src.html.pages.multi_tabs import HTMLTabsPageBuilder
-from src.html.pages.page import HTMLPage
+from src.html.html_pages import HTMLPage, TabsHTML
 from src.objects.data_objects import AbstractObject
 from src.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages
-from src.objects.metric_obj import TypeMetricValueCountsTable
 from src.objects.metric_tables import AllMetricsTable, AllMetricsStatsHTML
 from src.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, InProjectImportModuleGraphObj, \
     PackagesImportModuleGraphObj
@@ -15,18 +13,17 @@ class FullReport(AbstractObject):
         super().__init__(HTMLFile(self))
 
     def build(self):
-        html_builder = HTMLTabsPageBuilder()
+        html_builder = TabsHTML()
         html_builder.add_tab("General info", AllMetricsStatsHTML().data())
-
         html_builder.add_tab("UML Class diagram", UMLClassDiagramObj().data())
         html_builder.add_tab("UML Relation diagram", UMLClassRelationDiagramObj().data())
         html_builder.add_tab("Imports table", HTMLPage()
-                             .add(MostImportedPackages().data())
-                             .add(MostImportedProjectModules().data())
-                             .add(MostImportedProjectPackages().data())
-                             .add(UnusedModules().data())
-                             .add(InvalidImports().data())
-                             .html)
+                             .add_element(MostImportedPackages().data())
+                             .add_element(MostImportedProjectModules().data())
+                             .add_element(MostImportedProjectPackages().data())
+                             .add_element(UnusedModules().data())
+                             .add_element(InvalidImports().data())
+                             .html())
 
 
         html_builder.add_tab("In project Import graphs", InProjectImportModuleGraphObj().data())
@@ -34,10 +31,10 @@ class FullReport(AbstractObject):
         html_builder.add_tab("Package Import graphs", PackagesImportModuleGraphObj().data())
 
         html_builder.add_tab("Metrics table", HTMLPage()
-                             .add(AllMetricsTable().data())
-                             .html)
+                             .add_element(AllMetricsTable().data())
+                             .html())
 
-        return html_builder.html
+        return html_builder.html()
 
 
 if __name__ == '__main__':

@@ -1,9 +1,7 @@
 import argparse
 
-from profiling_addon import cprofile
 from src.objects.full_report import FullReport
 from src.objects.grab_code import grab_code
-from src.objects.python_object import PObject
 from src.python.python_source_obj import PythonSourceObj
 
 

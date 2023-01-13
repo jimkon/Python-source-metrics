@@ -1,15 +1,11 @@
-import tempfile
-
-import pandas as pd
 import matplotlib.pyplot as plt
 
-from src.html.image_html import HTMLImageBuilder
-from src.objects.metric_obj import NumberOfCodeLinesHistogram, TypeMetricValueCountsTable, GeneralItemMetricHTMLTable, \
+from src.objects.metric_obj import NumberOfCodeLinesHistogram, GeneralItemMetricHTMLTable, \
     FunctionArgsHistogram
 
 plt.style.use('bmh')
 
-from src.html.pages.page import HTMLPage
+from src.html.html_pages import HTMLPage
 from src.metrics.metric_sets import ALL_METRICS
 from src.objects.data_objects import HTMLTableObject, DataframeObject, HTMLObject
 
@@ -35,10 +31,10 @@ class AllMetricsTable(HTMLTableObject):
 class AllMetricsStatsHTML(HTMLObject):
     def build(self):
         page = HTMLPage()
-        page.add(GeneralItemMetricHTMLTable().data())
-        page.add(NumberOfCodeLinesHistogram().data())
-        page.add(FunctionArgsHistogram().data())
-        return page.html
+        page.add_element(GeneralItemMetricHTMLTable().data())
+        page.add_element(NumberOfCodeLinesHistogram().data())
+        page.add_element(FunctionArgsHistogram().data())
+        return page.html()
 
 
 if __name__ == '__main__':

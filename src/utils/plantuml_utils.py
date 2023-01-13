@@ -4,7 +4,7 @@ import threading
 import plantuml
 
 from src.configs import PATH_FILES_DIR
-from src.html.image_html import HTMLImageBuilder
+from src.html.html_pages import ImageHTML
 from src.utils.logs import log_plantuml
 
 
@@ -24,7 +24,7 @@ def plantuml_doc_to_html_image(plantuml_doc, temp_dir):
     try:
         produce_uml_diagram_from_text_file(infile_name,
                                            output_path=outfile_name)
-        return HTMLImageBuilder(outfile_name).html
+        return ImageHTML.from_image_file(outfile_name).html()
     except Exception as e:
         return f"<div>The following error occurred while processing the doc:" \
                f"<br>{plantuml_doc}" \

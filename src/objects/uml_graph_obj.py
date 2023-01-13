@@ -1,4 +1,4 @@
-from src.html.pages.page import HTMLPage
+from src.html.html_pages import HTMLPage
 from src.objects.data_objects import AbstractObject
 from src.objects.imports_data_objects import InProjectImportModuleGraphDataframe, PackagesImportModuleGraphDataframe
 from src.objects.python_object import PObject
@@ -22,9 +22,9 @@ class PlantUMLDiagramObj(AbstractObject):
         plantuml_diagram_html_images = self._prod_func(docs)
 
         html_page = HTMLPage()
-        [html_page.add(html_image) for html_image in plantuml_diagram_html_images]
+        [html_page.add_element(html_image) for html_image in plantuml_diagram_html_images]
 
-        return html_page.html
+        return html_page.html()
 
     def plantuml_docs(self):
         pass
