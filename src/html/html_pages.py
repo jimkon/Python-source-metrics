@@ -10,7 +10,7 @@ _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templa
 
 
 def _read_template(template_name):
-    filename = os.path.join(_TEMPLATE_DIR, template_name + '.html')
+    filename = os.path.join(_TEMPLATE_DIR, template_name+'.html')
     with open(filename, 'r') as f:
         return f.read()
 
@@ -95,6 +95,7 @@ class ImageHTML(TemplateHTMLBuilder):
 
 class TabsHTML(TemplateHTMLBuilder):
     def __init__(self):
+
         super().__init__('tabs')
         self._id = uuid.uuid4().hex[:6].upper()
 
@@ -140,6 +141,7 @@ class DropMenuHTML(TemplateHTMLBuilder):
         to_add = f"<div class=\"dropmenu_content_[id]\" id=\"hidden_div{self._opt_cnt}_[id]\">{html_content}</div>\n\t[option_div]"
         self.replace('option_div', to_add)
 
+
     def add_option(self, label, html_content):
         self._add_label(label)
         self._add_div(label, html_content.html() if issubclass(html_content.__class__, HTMLObject) else html_content)
@@ -184,3 +186,4 @@ class SimpleHTMLTable(HTMLTableBuilder):
         self.add_column_names(self._df.columns)
         for row in self._df.iterrows():
             self.add_row(row[1].values)
+
