@@ -1,106 +1,85 @@
-import os
-import tempfile
 import threading
+import uuid
 
 import plantuml
 
-from src.configs import PATH_FILES_DIR
 from src.html.html_pages import ImageHTML
-from src.utils.logs import log_plantuml, log_yellow
+from src.utils.logs import log_plantuml
 
 PLANTUML_LOCAL_SERVER_URL = 'http://localhost:8080/img/'
-PLANTUML_GLOBAL_SERVER_URL = 'http://www.plantuml.com/plantuml/img/'
+PLANTUML_WEB_SERVER_URL = 'http://www.plantuml.com/plantuml/img/'
 
 
-def _check_local_plantuml_server():
-    try:
-        pl = plantuml.PlantUML(PLANTUML_LOCAL_SERVER_URL)
-        pl.processes("""@startuml
-Bob -> Alice : helloasdasdasd
-@enduml""")
-    except ConnectionRefusedError as ce:
-        return False
-    return True
-
-
-def produce_uml_diagram_from_text_file(input_text_filepath, output_path):
-    if _check_local_plantuml_server():
-        log_plantuml(f"(LOCALHOST) Converting UML diagram image ({output_path}) from input text file ({input_text_filepath})")
-        pl = plantuml.PlantUML(PLANTUML_LOCAL_SERVER_URL)
-    else:
-        log_plantuml(f"(WEB) Converting UML diagram image ({output_path}) from input text file ({input_text_filepath})")
-        pl = plantuml.PlantUML(PLANTUML_GLOBAL_SERVER_URL)
-    pl.processes_file(input_text_filepath, outfile=output_path, directory='')
-
-
-def plantuml_doc_to_html_image(plantuml_doc, temp_dir):
-    temp_file = tempfile.NamedTemporaryFile(suffix="_temp_uml_text_file.txt", dir=temp_dir, delete=False)
-    file_pointer = open(temp_file.name, 'w')
-    file_pointer.write(plantuml_doc)
-
-    infile_name, outfile_name = temp_file.name, f"{temp_file.name}.png"
-
-    try:
-        produce_uml_diagram_from_text_file(infile_name,
-                                           output_path=outfile_name)
-        file_pointer.close()
-        os.unlink(file_pointer.name)
-        return ImageHTML.from_image_file(outfile_name).html()
-    except plantuml.PlantUMLError as pe:
-        log_yellow(f'PlantUMLError failed: {infile_name} will not be produced.')
-
-    except Exception as e:
-        log_yellow(f'PLANTUML failed: {infile_name} will not be produced. {e.__class__}')
-        return f"<div>The following error occurred while processing the doc:" \
-               f"<br>{plantuml_doc}" \
-               f"<br>{e}</div>"
-
-
-class PlantUMLImageProductionThread(threading.Thread):
-    def __init__(self, uml_doc, _dir):
+class WorkerThread(threading.Thread):
+    def __init__(self, task):
         threading.Thread.__init__(self)
-        self._uml_doc = uml_doc
-        self._dir = _dir
+        self._task = task
         self._result = None
 
     def run(self):
-        import random
-        id = random.randint(0, 1000)
+        id = uuid.uuid4().hex[:6]
         log_plantuml(f'Thread {id} started')
-        self._result = plantuml_doc_to_html_image(self._uml_doc, self._dir)
-        log_plantuml(f'-Thread {id} finished')
+        self._result = self._task()
+        log_plantuml(f'-- Thread {id} finished')
 
     def result(self):
         return self._result
 
 
-def produce_plantuml_diagrams_in_html_images(plantuml_docs):
-    temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_")
+class PlantUMLService:
+    @staticmethod
+    def _check_local_plantuml_server():
+        try:
+            pl = plantuml.PlantUML(PLANTUML_LOCAL_SERVER_URL)
+            pl.processes("""@startuml\nBob -> Alice : hello\n@enduml""")
+        except ConnectionRefusedError as ce:
+            return False
+        return True
 
-    html_images = []
-    for doc in plantuml_docs:
-        html = plantuml_doc_to_html_image(doc, temp_dir.name)
-        html_images.append(html)
+    def __init__(self, multithreading=False):
+        self._multithreading_flag = multithreading
 
-    return html_images
+        if PlantUMLService._check_local_plantuml_server():
+            log_plantuml(f"(LOCALHOST) Plant UML running locally: {PLANTUML_LOCAL_SERVER_URL}")
+            self._plant_uml_server = plantuml.PlantUML(PLANTUML_LOCAL_SERVER_URL)
+        else:
+            log_plantuml(f"(WEB) Plant UML running on web: {PLANTUML_WEB_SERVER_URL}")
+            self._plant_uml_server = plantuml.PlantUML(PLANTUML_WEB_SERVER_URL)
+
+    def convert_doc_to_html_image(self, doc):
+        log_plantuml(f"Processing plantUML document (size={len(doc)})..")
+        raw_image_data = self._plant_uml_server.processes(plantuml_text=doc)
+        image_html = ImageHTML(raw_image_data)
+        log_plantuml(f"PlantUML document (size={len(doc)}) is done.")
+
+        return image_html
+
+    def convert_multiple_docs_to_html_images(self, docs):
+        if self._multithreading_flag:
+            return self._send_multiple_requests(docs)
+        else:
+            return [self.convert_doc_to_html_image(doc) for doc in docs]
+
+    def _send_multiple_requests(self, docs):
+        threads = []
+        for doc in docs:
+            thread = WorkerThread(lambda: self.convert_doc_to_html_image(doc))
+            thread.start()
+            threads.append(thread)
+
+        for thread in threads:
+            thread.join()
+
+        html_images = [thread.result() for thread in threads]
+        return html_images
 
 
-def produce_plantuml_diagrams_in_html_images_multithreading(plantuml_docs):
-    temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_")
+if __name__ == "__main__":
+    serv = PlantUMLService()
+    docs = ["""@startuml\nBob -> Alice : hello\n@enduml""", """@startuml\nBob -> Alice : hello\n@enduml"""]
+    res = serv.convert_multiple_docs_to_html_images(docs)
+    print(res)
 
-    threads = []
-    for doc in plantuml_docs:
-
-        thread = PlantUMLImageProductionThread(doc, temp_dir.name)
-        thread.start()
-        threads.append(thread)
-
-    for thread in threads:
-        thread.join()
-
-    html_images = [thread.result() for thread in threads]
-
-    return html_images
 
 
 

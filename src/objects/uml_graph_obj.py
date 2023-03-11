@@ -4,14 +4,13 @@ from src.objects.imports_data_objects import InProjectImportModuleGraphDataframe
 from src.objects.python_object import PObject
 from src.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder
 from src.utils.file_strategies import HTMLFile
-from src.utils.plantuml_utils import produce_plantuml_diagrams_in_html_images_multithreading, \
-    produce_plantuml_diagrams_in_html_images
+from src.utils.plantuml_utils import PlantUMLService
 
 
 class PlantUMLDiagramObj(AbstractObject):
-    def __init__(self, multithread_prod=False):
+    def __init__(self, multithread=False):
         super().__init__(HTMLFile(self))
-        self._prod_func = produce_plantuml_diagrams_in_html_images_multithreading if multithread_prod else produce_plantuml_diagrams_in_html_images
+        self._plant_uml = PlantUMLService(multithread)
 
     def build(self):
         docs = self.plantuml_docs()
@@ -19,7 +18,7 @@ class PlantUMLDiagramObj(AbstractObject):
         if isinstance(docs, str):
             docs = [docs]
 
-        plantuml_diagram_html_images = self._prod_func(docs)
+        plantuml_diagram_html_images = self._plant_uml.convert_multiple_docs_to_html_images(docs)
 
         html_page = HTMLPage()
         [html_page.add_element(html_image) for html_image in plantuml_diagram_html_images]
@@ -32,7 +31,7 @@ class PlantUMLDiagramObj(AbstractObject):
 
 class UMLClassDiagramObj(PlantUMLDiagramObj):
     def __init__(self):
-        super().__init__(multithread_prod=True)
+        super().__init__(multithread=True)
 
     def plantuml_docs(self):
         pobj = PObject().python_source_object()
