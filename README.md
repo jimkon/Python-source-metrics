@@ -6,10 +6,5 @@ also the relations of the objects it contains such as modules and classes. This 
 quality of the code, fix vulnerable design choices and clean the codebase. 
 
 ## How to use
-After cloning this project, execute the `pystruct.py` file and point it to the directory or git repository containing
-the Python codebase you want to analyse.   
-**Example**  
-`python pystruct.py https://github.com/jimkon/Python-source-metrics.git`
-
-This will make a copy of all the python files in the codebase and start analysing them. The end result will be a 
-`FullReport.html` file in the report_files/obj directory that gets created after the execution.
+After cloning this project, change to `Python-source-metrics` directory and run `docker-compose up`. Then open the
+following URL `http://localhost:5001/`.
