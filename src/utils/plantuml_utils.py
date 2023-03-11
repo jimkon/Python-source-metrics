@@ -36,7 +36,7 @@ class PlantUMLService:
             return False
         return True
 
-    def __init__(self, multithreading=False):
+    def __init__(self, multithreading=True):
         self._multithreading_flag = multithreading
 
         if PlantUMLService._check_local_plantuml_server():
@@ -56,9 +56,13 @@ class PlantUMLService:
 
     def convert_multiple_docs_to_html_images(self, docs):
         if self._multithreading_flag:
-            return self._send_multiple_requests(docs)
-        else:
-            return [self.convert_doc_to_html_image(doc) for doc in docs]
+            try:
+                raise NotImplementedError
+                # return self._send_multiple_requests(docs) doesn't work right now
+            except Exception as exception:
+                log_plantuml(f"Processing {len(docs)} documents with multithreading failed with {exception=}. Switching to linear.")
+                self._multithreading_flag = False
+        return [self.convert_doc_to_html_image(doc) for doc in docs]
 
     def _send_multiple_requests(self, docs):
         threads = []
