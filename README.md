@@ -1,4 +1,4 @@
-# Python Source Metrics
+# Python Source Metrics (v1)
 
 A tool that analyses a Python's project source files and calculate useful metrics and graphs. 
 The main goal of the metrics is to reflect information about the structure of the code, the dependencies and 
