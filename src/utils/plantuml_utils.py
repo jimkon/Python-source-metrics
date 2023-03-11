@@ -1,3 +1,4 @@
+import os
 import tempfile
 import threading
 
@@ -34,14 +35,16 @@ def produce_uml_diagram_from_text_file(input_text_filepath, output_path):
 
 def plantuml_doc_to_html_image(plantuml_doc, temp_dir):
     temp_file = tempfile.NamedTemporaryFile(suffix="_temp_uml_text_file.txt", dir=temp_dir, delete=False)
-    with open(temp_file.name, 'w') as f:
-        f.write(plantuml_doc)
+    file_pointer = open(temp_file.name, 'w')
+    file_pointer.write(plantuml_doc)
 
     infile_name, outfile_name = temp_file.name, f"{temp_file.name}.png"
 
     try:
         produce_uml_diagram_from_text_file(infile_name,
                                            output_path=outfile_name)
+        file_pointer.close()
+        os.unlink(file_pointer.name)
         return ImageHTML.from_image_file(outfile_name).html()
     except plantuml.PlantUMLError as pe:
         log_yellow(f'PlantUMLError failed: {infile_name} will not be produced.')
@@ -72,31 +75,32 @@ class PlantUMLImageProductionThread(threading.Thread):
 
 
 def produce_plantuml_diagrams_in_html_images(plantuml_docs):
-    with tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_") as temp_dir:
+    temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_")
 
-        html_images = []
-        for doc in plantuml_docs:
-            html = plantuml_doc_to_html_image(doc, temp_dir)
-            html_images.append(html)
+    html_images = []
+    for doc in plantuml_docs:
+        html = plantuml_doc_to_html_image(doc, temp_dir.name)
+        html_images.append(html)
 
-        return html_images
+    return html_images
 
 
 def produce_plantuml_diagrams_in_html_images_multithreading(plantuml_docs):
-    with tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_") as temp_dir:
-        threads = []
-        for doc in plantuml_docs:
+    temp_dir = tempfile.TemporaryDirectory(dir=PATH_FILES_DIR, prefix="temp_plantUML_images_")
 
-            thread = PlantUMLImageProductionThread(doc, temp_dir)
-            thread.start()
-            threads.append(thread)
+    threads = []
+    for doc in plantuml_docs:
 
-        for thread in threads:
-            thread.join()
+        thread = PlantUMLImageProductionThread(doc, temp_dir.name)
+        thread.start()
+        threads.append(thread)
 
-        html_images = [thread.result() for thread in threads]
+    for thread in threads:
+        thread.join()
 
-        return html_images
+    html_images = [thread.result() for thread in threads]
+
+    return html_images
 
 
 
