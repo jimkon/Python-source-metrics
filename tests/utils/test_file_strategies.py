@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-import src.utils.file_strategies as fs
+import pystruct.utils.file_strategies as fs
 
 
 class ExampleObject:

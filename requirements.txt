@@ -1,3 +1,5 @@
 pandas
 plantuml
 GitPython
+Flask==2.2.2
+matplotlib

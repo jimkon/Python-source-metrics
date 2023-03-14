@@ -6,5 +6,5 @@ also the relations of the objects it contains such as modules and classes. This 
 quality of the code, fix vulnerable design choices and clean the codebase. 
 
 ## How to use
-After cloning this project, change to `Python-source-metrics` directory and run `docker-compose up`. Then open the
-following URL `http://localhost:5001/`.
+After cloning this project, change to `Python-source-metrics` directory and run `docker-compose up`. Then open [this
+ URL](http://localhost:5001/).

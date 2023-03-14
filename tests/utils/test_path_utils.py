@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import mock
 
-from src.utils import path_utils
+from pystruct.utils import path_utils
 
 
 class TestFiles(unittest.TestCase):

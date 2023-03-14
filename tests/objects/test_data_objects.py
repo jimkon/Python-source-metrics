@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from src.objects.data_objects import AbstractObject
+from pystruct.objects.data_objects import AbstractObject
 
 
 class TestAbstractObject(unittest.TestCase):
