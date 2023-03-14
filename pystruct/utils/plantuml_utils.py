@@ -38,6 +38,11 @@ class PlantUMLService:
 
     def __init__(self, multithreading=False):
         self._multithreading_flag = multithreading
+        self._plant_uml_server = None
+
+    def set_plant_uml_server(self):
+        if self._plant_uml_server is not None:
+            return
 
         if PlantUMLService._check_local_plantuml_server():
             log_plantuml(f"(LOCALHOST) Plant UML running locally: {PLANTUML_LOCAL_SERVER_URL}")
