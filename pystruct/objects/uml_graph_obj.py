@@ -1,3 +1,7 @@
+from itertools import chain
+
+import networkx as nx
+
 from pystruct.html.html_pages import HTMLPage
 from pystruct.objects.data_objects import AbstractObject
 from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, PackagesImportModuleGraphDataframe
@@ -53,7 +57,23 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 
         plantuml_doc_strings = uml_builder.result()
 
+        UMLClassRelationDiagramObj.split_connected_graphs(plantuml_doc_strings)
         return plantuml_doc_strings
+
+    @staticmethod
+    def split_documents(graph_doc):
+        graph_doc_lines = graph_doc.split('\n')
+        class_relations = [line.split(' <|-- ') for line in graph_doc_lines if '<|--' in line]
+
+        UMLClassRelationDiagramObj.split_subgraphs(class_relations)
+        t = 0
+
+    @staticmethod
+    def split_subgraphs(relations):
+        G = nx.DiGraph()
+        G.add_nodes_from(set(chain.from_iterable(relations)))
+        for a, b in relations:
+            G.add_edge(a, b)
 
 
 class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
@@ -75,7 +95,7 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
 
 
 if __name__ == '__main__':
-    UMLClassDiagramObj().data()
+    # UMLClassDiagramObj().data()
     UMLClassRelationDiagramObj().data()
-    InProjectImportModuleGraphObj().data()
-    PackagesImportModuleGraphObj().data()
+    # InProjectImportModuleGraphObj().data()
+    # PackagesImportModuleGraphObj().data()
