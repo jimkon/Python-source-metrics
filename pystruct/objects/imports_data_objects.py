@@ -1,7 +1,8 @@
 import pandas as pd
 
+from pystruct.html_utils.html_pages import HTMLPage
 from pystruct.metrics.import_metrics import enrich_import_raw_df
-from pystruct.objects.data_objects import DataframeObject, HTMLTableObject
+from pystruct.objects.data_objects import DataframeObject, HTMLTableObject, HTMLObject
 from pystruct.objects.metric_obj import IsScriptFile
 from pystruct.objects.python_object import PObject
 from pystruct.reports.import_graph import CollectImportsVisitor
@@ -103,6 +104,17 @@ class PackagesImportModuleGraphDataframe(DataframeObject):
         df_graph = df[~(df['is_project_module']) & ~(df['imports'] == 'no-imports')][['module', 'import_root']].drop_duplicates()
 
         return df_graph
+
+
+class ImportsStatsHTML(HTMLObject):
+    def build(self):
+        page = HTMLPage()
+        page.add_element(MostImportedPackages().data())
+        page.add_element(MostImportedProjectModules().data())
+        page.add_element(MostImportedProjectPackages().data())
+        page.add_element(UnusedModules().data())
+        page.add_element(InvalidImports().data())
+        return page.html()
 
 
 if __name__ == "__main__":

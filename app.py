@@ -3,7 +3,7 @@ import sys
 from flask import Flask, render_template
 
 from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
-    MostImportedProjectModules, MostImportedProjectPackages
+    MostImportedProjectModules, MostImportedProjectPackages, ImportsStatsHTML
 from pystruct.objects.metric_tables import AllMetricsTable, AllMetricsStatsHTML
 from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, InProjectImportModuleGraphObj, \
     PackagesImportModuleGraphObj
