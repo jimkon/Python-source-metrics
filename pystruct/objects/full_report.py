@@ -1,4 +1,4 @@
-from pystruct.html.html_pages import HTMLPage, TabsHTML
+from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
 from pystruct.objects.data_objects import AbstractObject
 from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages

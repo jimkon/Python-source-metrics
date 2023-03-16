@@ -2,7 +2,7 @@ from itertools import chain
 
 import networkx as nx
 
-from pystruct.html.html_pages import HTMLPage
+from pystruct.html_utils.html_pages import HTMLPage
 from pystruct.objects.data_objects import AbstractObject
 from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, PackagesImportModuleGraphDataframe
 from pystruct.objects.python_object import PObject
@@ -57,23 +57,37 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 
         plantuml_doc_strings = uml_builder.result()
 
-        UMLClassRelationDiagramObj.split_connected_graphs(plantuml_doc_strings)
+        plantuml_doc_strings = UMLClassRelationDiagramObj.split_documents(plantuml_doc_strings)
         return plantuml_doc_strings
 
     @staticmethod
     def split_documents(graph_doc):
         graph_doc_lines = graph_doc.split('\n')
-        class_relations = [line.split(' <|-- ') for line in graph_doc_lines if '<|--' in line]
+        class_relations_lines = [line for line in graph_doc_lines if '<|--' in line]
+        class_relations = [line.split(' <|-- ') for line in class_relations_lines]
 
-        UMLClassRelationDiagramObj.split_subgraphs(class_relations)
-        t = 0
+        subgraphs = UMLClassRelationDiagramObj.split_subgraphs(class_relations)
+
+        subgraph_docs = []
+        for subgraph in subgraphs:
+            subgraph_lines = ['@startuml']+[line for line in graph_doc_lines if any([_class in line for _class in subgraph])]+['@enduml']
+            subgraph_doc = '\n'.join(subgraph_lines)
+            subgraph_docs.append(subgraph_doc)
+
+        return subgraph_docs
+
 
     @staticmethod
     def split_subgraphs(relations):
-        G = nx.DiGraph()
+        G = nx.Graph()
         G.add_nodes_from(set(chain.from_iterable(relations)))
         for a, b in relations:
             G.add_edge(a, b)
+
+        subgraphs = [list(G.subgraph(c).nodes) for c in nx.connected_components(G)]
+
+        return subgraphs
+
 
 
 class InProjectImportModuleGraphObj(PlantUMLDiagramObj):

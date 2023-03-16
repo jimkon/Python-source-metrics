@@ -5,7 +5,7 @@ from pystruct.objects.metric_obj import NumberOfCodeLinesHistogram, GeneralItemM
 
 plt.style.use('bmh')
 
-from pystruct.html.html_pages import HTMLPage
+from pystruct.html_utils.html_pages import HTMLPage
 from pystruct.metrics.metric_sets import ALL_METRICS
 from pystruct.objects.data_objects import HTMLTableObject, DataframeObject, HTMLObject
 

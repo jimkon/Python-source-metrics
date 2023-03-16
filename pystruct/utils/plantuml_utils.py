@@ -3,7 +3,7 @@ import uuid
 
 import plantuml
 
-from pystruct.html.html_pages import ImageHTML
+from pystruct.html_utils.html_pages import ImageHTML
 from pystruct.utils.logs import log_plantuml
 
 PLANTUML_LOCAL_SERVER_URL = 'http://localhost:8080/img/'
@@ -40,6 +40,12 @@ class PlantUMLService:
         self._multithreading_flag = multithreading
         self._plant_uml_server = None
 
+    @property
+    def plantuml_server(self):
+        if self._plant_uml_server is None:
+            self.set_plant_uml_server()
+        return self._plant_uml_server
+
     def set_plant_uml_server(self):
         if self._plant_uml_server is not None:
             return
@@ -53,7 +59,7 @@ class PlantUMLService:
 
     def convert_doc_to_html_image(self, doc):
         log_plantuml(f"Processing plantUML document (size={len(doc)})..")
-        raw_image_data = self._plant_uml_server.processes(plantuml_text=doc)
+        raw_image_data = self.plantuml_server.processes(plantuml_text=doc)
         image_html = ImageHTML(raw_image_data)
         log_plantuml(f"PlantUML document (size={len(doc)}) is done.")
 

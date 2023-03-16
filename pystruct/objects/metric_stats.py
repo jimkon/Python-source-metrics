@@ -5,7 +5,7 @@ import tempfile
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from pystruct.html.html_pages import ImageHTML
+from pystruct.html_utils.html_pages import ImageHTML
 from pystruct.objects.data_objects import HTMLTableObject, HTMLObject
 
 
