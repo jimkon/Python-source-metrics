@@ -19,7 +19,8 @@ def main():
 @app.route('/obj/<obj_class>')
 def obj(obj_class):
     cls = getattr(sys.modules[__name__], obj_class)
-    return cls().data()
+    html_object = cls().data()
+    return render_template('objects.html', html_object=html_object)
 
 
 if __name__ == "__main__":
