@@ -70,8 +70,9 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 
         subgraph_docs = []
         for subgraph in subgraphs:
-            subgraph_lines = ['@startuml']+[line for line in graph_doc_lines if any([_class in line for _class in subgraph])]+['@enduml']
-            subgraph_doc = '\n'.join(subgraph_lines)
+            subgraph_lines = [line for line in graph_doc_lines if any([_class in line for _class in subgraph])]
+            subgraph_doc = '@startuml\nleft to right direction\n'+'\n'.join(subgraph_lines)+'\n@enduml'
+
             subgraph_docs.append(subgraph_doc)
 
         return subgraph_docs
