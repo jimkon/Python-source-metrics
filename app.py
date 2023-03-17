@@ -3,7 +3,9 @@ import sys
 
 from flask import Flask, render_template, send_file, request, url_for, redirect
 
+from pystruct.objects.full_report import FullReport
 from pystruct.objects.grab_code import grab_code
+import pystruct
 
 from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages, ImportsStatsHTML
@@ -16,7 +18,8 @@ app.config['SECRET_KEY'] = 'test_key'
 
 @app.route('/')
 def main():
-    return render_template('index.html', **globals())
+    table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
+    return render_template('index.html', **locals())
 
 
 @app.route('/obj/<obj_class>')
@@ -28,6 +31,7 @@ def obj(obj_class):
 
 @app.route('/download/<obj_class>')
 def download_obj(obj_class):
+    getattr(sys.modules[__name__], obj_class.split('.')[0])().data()  # pre load the obj
     filepath = os.path.join(app.root_path, 'report_files/objs/', obj_class)
     app.logger.info(f"{filepath}")
     return send_file(filepath, as_attachment=True)

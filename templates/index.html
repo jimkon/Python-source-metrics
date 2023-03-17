@@ -3,6 +3,11 @@
 {% block content %}
     <h1>Home</h1>
     Reports:
+    <ul>
+        {% for title, obj_class in table_of_content_dict.items() %}
+            <li><a href={{url_for('obj', obj_class=obj_class)}}>{{title}}</a></li>
+        {% endfor %}
+    </ul>
         <ul>
             <li><a href={{url_for('obj', obj_class="AllMetricsStatsHTML")}}>All Metrics Stats</a></li>
             <li><a href={{url_for('obj', obj_class="UMLClassDiagramObj")}}>UML Class Diagram</a></li>

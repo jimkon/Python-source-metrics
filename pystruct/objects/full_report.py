@@ -8,17 +8,20 @@ from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationD
 
 
 class FullReport(HTMLObject):
+    content_dict = {
+        "General info": AllMetricsStatsHTML,
+        "UML Class diagram": UMLClassDiagramObj,
+        "UML Relation diagram": UMLClassRelationDiagramObj,
+        "Imports table": ImportsStatsHTML,
+        "In project Import graphs": InProjectImportModuleGraphObj,
+        "Package Import graphs": PackagesImportModuleGraphObj,
+        "Metrics table": AllMetricsTable,
+    }
+
     def build(self):
         html_builder = TabsHTML()
-        html_builder.add_tab("General info", AllMetricsStatsHTML().data())
-        html_builder.add_tab("UML Class diagram", UMLClassDiagramObj().data())
-        html_builder.add_tab("UML Relation diagram", UMLClassRelationDiagramObj().data())
-        html_builder.add_tab("Imports table", ImportsStatsHTML().data())
-        html_builder.add_tab("In project Import graphs", InProjectImportModuleGraphObj().data())
-
-        html_builder.add_tab("Package Import graphs", PackagesImportModuleGraphObj().data())
-
-        html_builder.add_tab("Metrics table", AllMetricsTable().data())
+        for title, obj_class in FullReport.content_dict.items():
+            html_builder.add_tab(title, obj_class().data())
 
         return html_builder.html()
 
