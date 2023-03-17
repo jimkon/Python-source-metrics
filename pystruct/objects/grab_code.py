@@ -4,10 +4,11 @@ from functools import lru_cache
 
 from git import Repo
 
-from pystruct.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR
+from pystruct.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR, PATH_GIT_COPY_DIR
 from pystruct.utils import path_utils
 from pystruct.utils.logs import log_yellow, log_cyan, log_red, log_pink
 from pystruct.utils.python_file_utils import find_source_dirs
+from pystruct.utils.path_utils import delete_dir_if_exists
 
 
 def is_git_url(url):
@@ -18,12 +19,15 @@ def is_git_url(url):
 
 def grab_code(path):
     if is_git_url(path):
-        with tempfile.TemporaryDirectory(prefix="git_clone_") as temp_dir:
-            log_pink(f"Cloning repo: {path} ...")
-            Repo.clone_from(path, temp_dir)
-            CopyCode.extract_all_source_dirs_from_path(temp_dir)
+        # with tempfile.TemporaryDirectory(prefix="git_clone_") as temp_dir:
+        log_pink(f"Cloning repo: {path} ...")
+        delete_dir_if_exists(PATH_GIT_COPY_DIR)
+        Repo.clone_from(path, PATH_GIT_COPY_DIR)
+        log_pink(f"Repo {path} cloned into path: {PATH_GIT_COPY_DIR}")
+        CopyCode.extract_all_source_dirs_from_path(PATH_GIT_COPY_DIR)
     else:
-        CopyCode.extract_all_source_dirs_from_path(os.path.dirname(path))
+        CopyCode(path)
+    # CopyCode.extract_all_source_dirs_from_path(dir_to_grab)
     return PATH_FILES_DIR
 
 
@@ -32,7 +36,7 @@ class CopyCode:
         self._path = path
         self._python_filpaths = python_filpaths if python_filpaths else self._grab_all_python_paths()
         log_yellow(f"Coping {len(self.all_python_filepaths)} source files from {path}.")
-        # delete_dir(PATH_FILES_DIR)
+        delete_dir_if_exists(PATH_CODE_COPY_DIR)
         self.copy_all_python_files()
         log_cyan(f"Copied {len(self.all_python_filepaths)} source files from {path}.")
 
@@ -55,7 +59,8 @@ class CopyCode:
             all_filenames = [self._path]
         else:
             all_filenames = path_utils.get_all_filenames_in_directory(self._path)
-        return path_utils.filter_filenames_by_extension(all_filenames, '.py')
+        all_python_filenames = path_utils.filter_filenames_by_extension(all_filenames, '.py')
+        return all_python_filenames
 
     @lru_cache
     def _calculate_all_new_python_paths(self):
@@ -82,4 +87,5 @@ class CopyCode:
 
 
 if __name__ == "__main__":
-    CopyCode.extract_all_source_dirs_from_path(r"C:\Users\jim\PycharmProjects\Python-source-metrics\report_files\git")
+    # grab_code('https://github.com/jimkon/Python-source-metrics.git')
+    CopyCode(r"C:\Users\jim\PycharmProjects\Python-source-metrics\pystruct")

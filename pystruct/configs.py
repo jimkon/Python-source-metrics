@@ -7,6 +7,7 @@ PATH_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # r"C:\
 
 PATH_FILES_DIR = join(PATH_ROOT, "report_files")
 PATH_CODE_COPY_DIR = join(PATH_FILES_DIR, "code_copy")
+PATH_GIT_COPY_DIR = join(PATH_FILES_DIR, "git_repo")
 
 PATH_STORE_HTML_BUILDS_DIR = join(PATH_FILES_DIR, "html_builds")
 
