@@ -1,7 +1,7 @@
 import os
 import sys
 
-from flask import Flask, render_template, send_file, request
+from flask import Flask, render_template, send_file, request, url_for, redirect
 
 from pystruct.objects.grab_code import grab_code
 
@@ -46,7 +46,9 @@ def load_project():
 
         try:
             grab_code(source)
+            return redirect(url_for('main'))
         except Exception as e:
+            app.logger.warning(e)
             error_message = str(e)
 
     return render_template('load_project.html', **locals())

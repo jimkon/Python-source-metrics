@@ -1,5 +1,6 @@
-import glob
 import os
+import shutil
+import stat
 
 from pystruct.configs import PYTHON_FILE_EXTENSION
 
@@ -84,11 +85,19 @@ def copy_file_from_to(from_path, to_path):
         f.write(file_content_str)
 
 
-def delete_dir(path):
-    files = glob.glob(path, recursive=True)
+def delete_dir_if_exists(path):
+    if not os.path.exists(path):
+        return False
+    rmtree(path)
+    return True
 
-    for f in files:
-        try:
-            os.remove(f)
-        except OSError as e:
-            print("Error: %s : %s" % (f, e.strerror))
+
+def rmtree(top):
+    for root, dirs, files in os.walk(top, topdown=False):
+        for name in files:
+            filename = os.path.join(root, name)
+            os.chmod(filename, stat.S_IWUSR)
+            os.remove(filename)
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    os.rmdir(top)
