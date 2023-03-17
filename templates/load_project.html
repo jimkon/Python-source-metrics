@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Load another project</h1>
+
+    <form method="POST">
+        <h2>Browse local files:</h2>
+            <label for="filepath_input">File path</label>
+            <input type="text" id="filepath_input" name="filepath_input" size="50">
+            <input type="submit" id="filepath_load_button" value="Load path"><label class='error_label'>{{filepath_error}}</label><br>
+            <input type="file" id="filepath_browse_button" disabled webkitdirectory directory multiple/>
+    </form>
+
+
+    <form method="POST">
+        <h2>Github project:</h2>
+            <label for="giturl_input">Git URL</label>
+            <input type="url" id="giturl_input" name="giturl_input" placeholder="https://github.com/jimkon/Python-source-metrics.git" size="50">
+            <input type="submit" id="giturl_load_button" value="Download repo"><label class='error_label'>{{giturl_error}}</label><br>
+    </form>
+
+
+{% endblock content %}

@@ -1,7 +1,9 @@
 import os
 import sys
 
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_file, request
+
+from pystruct.objects.grab_code import grab_code
 
 from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages, ImportsStatsHTML
@@ -10,7 +12,7 @@ from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationD
     PackagesImportModuleGraphObj
 
 app = Flask(__name__)
-
+app.config['SECRET_KEY'] = 'test_key'
 
 @app.route('/')
 def main():
@@ -29,6 +31,31 @@ def download_obj(obj_class):
     filepath = os.path.join(app.root_path, 'report_files/objs/', obj_class)
     app.logger.info(f"{filepath}")
     return send_file(filepath, as_attachment=True)
+
+
+@app.route('/load/', methods=['GET', 'POST'])
+def load_project():
+    app.logger.info(f"LOAD_PROJECT> {request.method}")
+    filepath_error, giturl_error = '', ''
+    source = None
+    if request.method == 'POST':
+        if "filepath_input" in request.form:
+            source = request.form['filepath_input']
+        elif "giturl_input" in request.form:
+            source = request.form['giturl_input']
+
+        app.logger.info(f"LOAD_PROJECT> {request.form=}")
+        app.logger.info(f"LOAD_PROJECT> {source=}")
+        try:
+            grab_code(source)
+        except Exception as e:
+            filepath_error = str(e)
+
+        app.logger.info(f"LOAD_PROJECT> {filepath_error}")
+
+    return render_template('load_project.html', **locals())
+
+
 
 
 if __name__ == "__main__":
