@@ -8,15 +8,6 @@
             <li><a href={{url_for('obj', obj_class=obj_class)}}>{{title}}</a></li>
         {% endfor %}
     </ul>
-        <ul>
-            <li><a href={{url_for('obj', obj_class="AllMetricsStatsHTML")}}>All Metrics Stats</a></li>
-            <li><a href={{url_for('obj', obj_class="UMLClassDiagramObj")}}>UML Class Diagram</a></li>
-            <li><a href={{url_for('obj', obj_class="UMLClassRelationDiagramObj")}}>UML Class Relation Diagram</a></li>
-            <li><a href={{url_for('obj', obj_class="ImportsStatsHTML")}}>Imports Stats</a></li>
-            <li><a href={{url_for('obj', obj_class="InProjectImportModuleGraphObj")}}>In Project Import Module Graph</a></li>
-            <li><a href={{url_for('obj', obj_class="PackagesImportModuleGraphObj")}}>Packages Import Module Graph</a></li>
-            <li><a href={{url_for('obj', obj_class="AllMetricsTable")}}>All Metrics Table</a></li>
-        </ul>
 <h3><a href={{url_for('download_obj', obj_class="FullReport.html")}}>Download full report</a></h3>
 <h3><a href={{url_for('load_project')}}>Load another project</a></h3>
 {% endblock content %}
