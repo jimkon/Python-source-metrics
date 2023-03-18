@@ -9,6 +9,7 @@ from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.plantuml_utils import PlantUMLService
+from pystruct.utils.graph_structures import Graph
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -66,7 +67,7 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
         class_relations_lines = [line for line in graph_doc_lines if '<|--' in line]
         class_relations = [line.split(' <|-- ') for line in class_relations_lines]
 
-        subgraphs = UMLClassRelationDiagramObj.split_subgraphs(class_relations)
+        subgraphs = [graph.nodes for graph in Graph(class_relations).subgraphs()]
 
         subgraph_docs = []
         for subgraph in subgraphs:
@@ -76,19 +77,6 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
             subgraph_docs.append(subgraph_doc)
 
         return subgraph_docs
-
-
-    @staticmethod
-    def split_subgraphs(relations):
-        G = nx.Graph()
-        G.add_nodes_from(set(chain.from_iterable(relations)))
-        for a, b in relations:
-            G.add_edge(a, b)
-
-        subgraphs = [list(G.subgraph(c).nodes) for c in nx.connected_components(G)]
-
-        return subgraphs
-
 
 
 class InProjectImportModuleGraphObj(PlantUMLDiagramObj):

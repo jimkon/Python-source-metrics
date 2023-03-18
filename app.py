@@ -58,7 +58,5 @@ def load_project():
     return render_template('load_project.html', **locals())
 
 
-
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
