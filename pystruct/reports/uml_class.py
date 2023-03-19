@@ -149,7 +149,7 @@ class PlantUMLDocument:
     def add_object(self, object_name):
         self._add_line(f"object {object_name}")
 
-    def add_object_relation(self, obj1, obj2, relation_str='<--', message=None):
+    def add_object_relation(self, obj1, obj2, relation_str='-->', message=None):
         info_message = f": {message}" if message else ''
         self._add_line(f"{obj1} {relation_str} {obj2}{info_message}")
 
