@@ -28,6 +28,10 @@ def enrich_import_raw_df(df):
 
     # finds the package path of each in-project import
     df['import_package'] = df['import_module'].apply(lambda x: element_with_longest_match(x, df['package'].unique()))
+
+    # like import_package column but for com packages too
+    df['import_any_package'] = df.apply(lambda row: row['import_package'] if row['is_project_module'] else row['import_root'], axis=1)
+
     return df
 
 

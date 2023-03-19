@@ -3,8 +3,9 @@ from pystruct.objects.data_objects import AbstractObject, HTMLObject
 from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
     MostImportedProjectModules, MostImportedProjectPackages, ImportsStatsHTML
 from pystruct.objects.metric_tables import AllMetricsTable, AllMetricsStatsHTML
-from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, InProjectImportModuleGraphObj, \
-    PackagesImportModuleGraphObj
+from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, \
+    InProjectImportModuleGraphObj, \
+    PackagesImportModuleGraphObj, HighLevelPackagesRelationsGraphObj
 
 
 class FullReport(HTMLObject):
@@ -14,7 +15,8 @@ class FullReport(HTMLObject):
         "UML Relation diagram": UMLClassRelationDiagramObj,
         "Imports table": ImportsStatsHTML,
         "In project Import graphs": InProjectImportModuleGraphObj,
-        "Package Import graphs": PackagesImportModuleGraphObj,
+        "Commercial Package Import graphs": PackagesImportModuleGraphObj,
+        "In-project Package Import graphs": HighLevelPackagesRelationsGraphObj,
         "Metrics table": AllMetricsTable,
     }
 

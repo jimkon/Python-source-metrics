@@ -149,9 +149,9 @@ class PlantUMLDocument:
     def add_object(self, object_name):
         self._add_line(f"object {object_name}")
 
-    def add_object_relation(self, obj1, obj2, relation_str='-->'):
-        self._add_line(f"{obj1} {relation_str} {obj2}")
-
+    def add_object_relation(self, obj1, obj2, relation_str='<--', message=None):
+        info_message = f": {message}" if message else ''
+        self._add_line(f"{obj1} {relation_str} {obj2}{info_message}")
 
     def finish_and_return(self):
         self._end_uml()
@@ -241,6 +241,32 @@ class ObjectRelationGraphBuilder:
     def add_relations(self):
         for left, right in zip(self._left_objs, self._right_objs):
             self._uml_doc.add_object_relation(left, right)
+        return self
+
+    def result(self):
+        return self._uml_doc.finish_and_return()
+
+
+class PackageRelationGraphBuilder:
+    def __init__(self, package, import_package, count_details):
+        self._left_objs = package
+        self._right_objs = import_package
+        self._counts = count_details
+
+        self._all_objs = set(self._left_objs).union(set(self._right_objs))
+
+        self._uml_doc = PlantUMLDocument()
+        self.add_package()
+        self.add_relations()
+
+    def add_package(self):
+        for obj in self._all_objs:
+            self._uml_doc.add_package(obj, {})
+        return self
+
+    def add_relations(self):
+        for left, right, count in zip(self._left_objs, self._right_objs, self._counts):
+            self._uml_doc.add_object_relation(left, right, message=f"x{count}")
         return self
 
     def result(self):

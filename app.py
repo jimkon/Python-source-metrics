@@ -7,11 +7,9 @@ from pystruct.objects.full_report import FullReport
 from pystruct.objects.grab_code import grab_code
 import pystruct
 
-from pystruct.objects.imports_data_objects import MostImportedPackages, UnusedModules, InvalidImports, \
-    MostImportedProjectModules, MostImportedProjectPackages, ImportsStatsHTML
-from pystruct.objects.metric_tables import AllMetricsTable, AllMetricsStatsHTML
-from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, InProjectImportModuleGraphObj, \
-    PackagesImportModuleGraphObj
+from pystruct.objects.imports_data_objects import *
+from pystruct.objects.metric_tables import *
+from pystruct.objects.uml_graph_obj import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test_key'

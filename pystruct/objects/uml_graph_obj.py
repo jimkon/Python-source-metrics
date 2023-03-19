@@ -1,15 +1,13 @@
-from itertools import chain
-
-import networkx as nx
-
 from pystruct.html_utils.html_pages import HTMLPage
 from pystruct.objects.data_objects import AbstractObject
-from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, PackagesImportModuleGraphDataframe
+from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, \
+    PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
 from pystruct.objects.python_object import PObject
-from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder
+from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
+    PlantUMLDocument, PackageRelationGraphBuilder
 from pystruct.utils.file_strategies import HTMLFile
-from pystruct.utils.plantuml_utils import PlantUMLService
 from pystruct.utils.graph_structures import Graph
+from pystruct.utils.plantuml_utils import PlantUMLService
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -86,6 +84,19 @@ class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
+class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
+    def plantuml_docs(self):
+        df = ImportsEnrichedDataframe().data()
+        df_filtered = df[df['is_project_module']][['package', 'import_package']]
+        df_agg = df_filtered.groupby(df_filtered.columns.tolist(), as_index=False).size()
+        plantuml_doc_strings = PackageRelationGraphBuilder(
+            df_agg['package'].tolist(),
+            df_agg['import_package'].tolist(),
+            df_agg['size'].tolist(),
+        ).result()
+        return plantuml_doc_strings
+
+
 class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = PackagesImportModuleGraphDataframe().data()
@@ -99,6 +110,7 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
 
 if __name__ == '__main__':
     # UMLClassDiagramObj().data()
-    UMLClassRelationDiagramObj().data()
+    # UMLClassRelationDiagramObj().data()
     # InProjectImportModuleGraphObj().data()
+    HighLevelPackagesRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
