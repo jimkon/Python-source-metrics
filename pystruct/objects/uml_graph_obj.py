@@ -1,10 +1,13 @@
-from pystruct.html_utils.html_pages import HTMLPage
-from pystruct.objects.data_objects import AbstractObject
+import pandas as pd
+import markdown
+
+from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
+from pystruct.objects.data_objects import AbstractObject, HTMLObject
 from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, \
     PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
 from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
-    PlantUMLDocument, PackageRelationGraphBuilder
+    PackageRelationGraphBuilder
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
@@ -89,13 +92,16 @@ class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
         df = ImportsEnrichedDataframe().data()
         df_filtered = df[df['is_project_module']][['package', 'import_package']]
         df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
+
         # TODO pkg_items is ready but cannot be printed
         # pkg_items = {k: v['module'] for k, v in df.groupby('package').agg({'module': set}).to_dict(orient='index').items()}
+        pkg_items = None
+
         plantuml_doc_strings = PackageRelationGraphBuilder(
             df_agg['package'].tolist(),
             df_agg['import_package'].tolist(),
             df_agg['size'].tolist(),
-            # package_items=pkg_items,
+            package_items=pkg_items,
         ).result()
         return plantuml_doc_strings
 
@@ -111,9 +117,43 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
+class DependencyAnalysisObj(HTMLObject):
+    def build(self):
+        df = ImportsEnrichedDataframe().data()
+        df = df[(~df['is_no_imports']) & (~df['is_init_file'])]
+        total_n_packages = df['package'].nunique()
+        total_n_modules = df['module'].nunique()
+        com_packages = df[~df['is_project_module']]['import_root'].unique()
+        n_com_packages = len(com_packages)
+        n_module_deps = df[df['is_project_module']].groupby('module').agg({'import_module': pd.Series.nunique})['import_module'].sum()
+        n_package_deps = df[df['is_project_module']].groupby('package').agg({'import_package': pd.Series.nunique})['import_package'].sum()
+        return markdown.markdown("""# Dependency analysis    
+Total number of packages=**{total_n_packages}**, total number of modules=**{total_n_modules}**   
+        Commercial packages used = (**{n_com_packages}**){com_packages}   
+        # of module dependencies = **{n_module_deps}**, # of package dependencies = **{n_package_deps}**
+        """.format(**locals()))
+
+
+class DependencyReportObj(HTMLObject):
+    content_dict = {
+        'Analysis': DependencyAnalysisObj,
+        "Package Relations (high level view)": HighLevelPackagesRelationsGraphObj,
+        "Commercial packages": PackagesImportModuleGraphObj,
+        "In project Import graphs": InProjectImportModuleGraphObj,
+    }
+
+    def build(self):
+        html_builder = TabsHTML()
+        for title, obj_class in self.content_dict.items():
+            html_builder.add_tab(title, obj_class().data())
+
+        return html_builder.html()
+
+
 if __name__ == '__main__':
+    DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
     # InProjectImportModuleGraphObj().data()
-    HighLevelPackagesRelationsGraphObj().data()
+    # HighLevelPackagesRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
