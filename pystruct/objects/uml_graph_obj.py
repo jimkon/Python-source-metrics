@@ -88,11 +88,14 @@ class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
         df_filtered = df[df['is_project_module']][['package', 'import_package']]
-        df_agg = df_filtered.groupby(df_filtered.columns.tolist(), as_index=False).size()
+        df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
+        # TODO pkg_items is ready but cannot be printed
+        # pkg_items = {k: v['module'] for k, v in df.groupby('package').agg({'module': set}).to_dict(orient='index').items()}
         plantuml_doc_strings = PackageRelationGraphBuilder(
             df_agg['package'].tolist(),
             df_agg['import_package'].tolist(),
             df_agg['size'].tolist(),
+            # package_items=pkg_items,
         ).result()
         return plantuml_doc_strings
 

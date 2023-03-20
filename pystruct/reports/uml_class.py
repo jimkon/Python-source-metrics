@@ -248,10 +248,11 @@ class ObjectRelationGraphBuilder:
 
 
 class PackageRelationGraphBuilder:
-    def __init__(self, package, import_package, count_details):
+    def __init__(self, package, import_package, count_details, package_items=None):
         self._left_objs = package
         self._right_objs = import_package
         self._counts = count_details
+        self._packages_items = package_items
 
         self._all_objs = set(self._left_objs).union(set(self._right_objs))
 
@@ -261,7 +262,8 @@ class PackageRelationGraphBuilder:
 
     def add_package(self):
         for obj in self._all_objs:
-            self._uml_doc.add_package(obj, {})
+            packages_items = self._packages_items[obj] if self._packages_items else {}
+            self._uml_doc.add_package(obj, packages_items)
         return self
 
     def add_relations(self):
