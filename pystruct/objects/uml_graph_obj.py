@@ -83,7 +83,10 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = InProjectImportModuleGraphDataframe().data()
-        plantuml_doc_strings = ObjectRelationGraphBuilder(df.values.tolist()).result()
+        plantuml_doc_strings = ObjectRelationGraphBuilder(
+            df['import_module'].tolist(),
+            df['module'].tolist()
+        ).result()
         return plantuml_doc_strings
 
 
@@ -151,9 +154,9 @@ class DependencyReportObj(HTMLObject):
 
 
 if __name__ == '__main__':
-    DependencyAnalysisObj().data()
+    # DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
-    # InProjectImportModuleGraphObj().data()
+    InProjectImportModuleGraphObj().data()
     # HighLevelPackagesRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()

@@ -223,9 +223,9 @@ class UMLClassRelationBuilder(TreeNodeVisitor):
 
 
 class ObjectRelationGraphBuilder:
-    def __init__(self, rels_list):
-        self._left_objs = list(map(lambda x: x[0], rels_list))
-        self._right_objs = list(map(lambda x: x[1], rels_list))
+    def __init__(self, a_to, to_b):
+        self._left_objs = a_to
+        self._right_objs = to_b
 
         self._all_objs = set(self._left_objs).union(set(self._right_objs))
 
