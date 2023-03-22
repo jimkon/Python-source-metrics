@@ -20,14 +20,25 @@ class AbstractObject(SingletonClass, abc.ABC):
         self._file_strategy = file_strategy
         self._data = None
 
-    def data(self):
+    def data(self, force_rebuild=False):
         # try:
-        return self._prepare_data()
+        return self._prepare_data(force_rebuild)
         # except Exception as e:
         #     log_red(str(e))
         #     return f"{self.__class__.__name__}: {e}"
 
-    def _prepare_data(self):
+    def build_and_save(self):
+        log_obj_stage(f"{self.__class__.__name__} object is building.")
+        self._data = self.build()
+        log_obj_stage(f"{self.__class__.__name__} object finished.")
+
+        if self._file_strategy and self._data is not None:  # if self._data breaks in Dataframes
+            self._file_strategy.save(self._data)
+
+    def _prepare_data(self, force_rebuild=False):
+        if force_rebuild:
+            self.build_and_save()
+
         if self._data is not None:  # if self._data breaks in Dataframes
             return self._data
 
@@ -35,12 +46,7 @@ class AbstractObject(SingletonClass, abc.ABC):
             self._data = self._file_strategy.load()
 
         if self._data is None:
-            log_obj_stage(f"{self.__class__.__name__} object is building.")
-            self._data = self.build()
-            log_obj_stage(f"{self.__class__.__name__} object finished.")
-
-            if self._file_strategy and self._data is not None:# if self._data breaks in Dataframes
-                self._file_strategy.save(self._data)
+            self.build_and_save()
 
         return self._data
 
