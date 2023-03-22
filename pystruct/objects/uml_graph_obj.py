@@ -83,11 +83,15 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = InProjectImportModuleGraphDataframe().data()
-        plantuml_doc_strings = ObjectRelationGraphBuilder(
-            df['import_module'].tolist(),
-            df['module'].tolist()
-        ).result()
-        return plantuml_doc_strings
+        modules, import_modules = df['module'].tolist(), df['import_module'].tolist()
+
+        subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
+        docs = []
+        for subgraph in subgraphs:
+            _modules, _import_modules = [edge[0] for edge in subgraph.edges], [edge[1] for edge in subgraph.edges]
+            plantuml_doc_strings = ObjectRelationGraphBuilder(_modules, _import_modules).result()
+            docs.append(plantuml_doc_strings)
+        return docs
 
 
 class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
@@ -109,13 +113,23 @@ class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
+class MidLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
+    def plantuml_docs(self):
+        df = InProjectImportModuleGraphDataframe().data()
+        modules, import_modules = df['module'].tolist(), df['import_module'].tolist()
+        plantuml_doc_strings = ObjectRelationGraphBuilder(modules, import_modules).result()
+        return plantuml_doc_strings
+
+
 class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = PackagesImportModuleGraphDataframe().data()
 
         plantuml_doc_strings = []
         for package in df['import_root'].unique():
-            doc = ObjectRelationGraphBuilder(df[df['import_root'] == package].values.tolist()).result()
+            sub_df = df[df['import_root'] == package]
+            module, import_root = sub_df['module'].tolist(), sub_df['import_root'].tolist()
+            doc = ObjectRelationGraphBuilder(module, import_root).result()
             plantuml_doc_strings.append(doc)
         return plantuml_doc_strings
 
@@ -141,6 +155,7 @@ class DependencyReportObj(HTMLObject):
     content_dict = {
         'Analysis': DependencyAnalysisObj,
         "Package Relations (high level view)": HighLevelPackagesRelationsGraphObj,
+        "Package Relations (mid level view)": MidLevelPackagesRelationsGraphObj,
         "Commercial packages": PackagesImportModuleGraphObj,
         "In project Import graphs": InProjectImportModuleGraphObj,
     }
@@ -158,5 +173,6 @@ if __name__ == '__main__':
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
     InProjectImportModuleGraphObj().data()
+    MidLevelPackagesRelationsGraphObj().data()
     # HighLevelPackagesRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
