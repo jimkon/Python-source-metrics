@@ -26,8 +26,8 @@ def all_subclasses(cls):
 def main():
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
     debug_flag = app.debug
-    all_objects = [_cls.__name__ for _cls in all_subclasses(AbstractObject)
-                   if (issubclass(_cls, HTMLObject) and not isinstance(_cls, abc.ABC))]
+    all_objects = sorted([_cls.__name__ for _cls in all_subclasses(AbstractObject)
+                   if (issubclass(_cls, HTMLObject) and not isinstance(_cls, abc.ABC))])
     app.logger.info([_cls.__name__ for _cls in all_subclasses(AbstractObject)
                    if (issubclass(_cls, HTMLObject))])
     app.logger.info([_cls.__name__ for _cls in all_subclasses(AbstractObject)
