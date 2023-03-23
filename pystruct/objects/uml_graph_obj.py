@@ -7,7 +7,7 @@ from pystruct.objects.imports_data_objects import InProjectImportModuleGraphData
     PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
 from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
-    PackageRelationGraphBuilder
+    PackageRelationGraphBuilder, PlantUMLPackagesAndModulesBuilder
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
@@ -115,10 +115,25 @@ class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
 
 class MidLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
-        df = InProjectImportModuleGraphDataframe().data()
-        modules, import_modules = df['module'].tolist(), df['import_module'].tolist()
-        plantuml_doc_strings = ObjectRelationGraphBuilder(modules, import_modules).result()
-        return plantuml_doc_strings
+        df = ImportsEnrichedDataframe().data()
+        plantuml_doc = PlantUMLPackagesAndModulesBuilder()
+
+        all_packages = set(df['package'].unique()).union(df['import_package'].dropna().unique())
+        for package in all_packages:
+            modules = df[(df['package'] == package) & (~df['is_init_file'])]['module'].unique()
+
+            plantuml_doc.start_container('package', package, '<<Folder>>')
+            for module in modules:
+                plantuml_doc.add_object('object', module)
+            plantuml_doc.end_container()
+
+        df_filtered = df[df['is_project_module']][['module', 'import_module']].drop_duplicates()
+        modules, import_modules = df_filtered['module'].tolist(), df_filtered['import_module'].tolist()
+        for module, import_module in zip(modules, import_modules):
+            plantuml_doc.add_relation(module, '<|--', import_module)
+
+        plantuml_doc_string = plantuml_doc.finish_and_return()
+        return plantuml_doc_string
 
 
 class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
@@ -172,7 +187,7 @@ if __name__ == '__main__':
     # DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
-    InProjectImportModuleGraphObj().data()
+    # InProjectImportModuleGraphObj().data()
     MidLevelPackagesRelationsGraphObj().data()
     # HighLevelPackagesRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
