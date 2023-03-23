@@ -21,6 +21,7 @@ class AbstractObject(SingletonClass, abc.ABC):
         self._data = None
 
     def data(self):
+        log_obj_stage(f"{self.__class__.__name__} data.")
         # try:
         return self._prepare_data()
         # except Exception as e:

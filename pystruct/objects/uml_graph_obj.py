@@ -156,8 +156,8 @@ class DependencyReportObj(HTMLObject):
         'Analysis': DependencyAnalysisObj,
         "Package Relations (high level view)": HighLevelPackagesRelationsGraphObj,
         "Package Relations (mid level view)": MidLevelPackagesRelationsGraphObj,
-        "Commercial packages": PackagesImportModuleGraphObj,
         "In project Import graphs": InProjectImportModuleGraphObj,
+        "Commercial packages": PackagesImportModuleGraphObj,
     }
 
     def build(self):
