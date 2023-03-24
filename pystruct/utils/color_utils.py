@@ -1,14 +1,14 @@
 import colorsys
 
 
-def HSVToRGB(h, s, v):
-    (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
+def HLSToRGB(h, l, s):
+    (r, g, b) = colorsys.hls_to_rgb(h, l, s)
     return (int(255 * r), int(255 * g), int(255 * b))
 
 
-def getDistinctColors(n, saturation=1., value=1., to_hex=True):
+def getDistinctColors(n, luminance=0.75, saturation=1., to_hex=True):
     huePartition = 1.0 / (n + 1)
-    rgb_colors = [HSVToRGB(huePartition * hue_value, saturation, value) for hue_value in range(0, n)]
+    rgb_colors = [HLSToRGB(huePartition * hue_value, luminance, saturation) for hue_value in range(0, n)]
     if to_hex:
         return [RGBtoHex(*rgb) for rgb in rgb_colors]
     else:
