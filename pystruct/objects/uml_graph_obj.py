@@ -2,7 +2,7 @@ import pandas as pd
 import markdown
 
 from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
-from pystruct.objects.data_objects import AbstractObject, HTMLObject
+from pystruct.objects.data_objects import AbstractObject, HTMLObject, DataframeObject
 from pystruct.objects.imports_data_objects import InProjectImportModuleGraphDataframe, \
     PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
 from pystruct.objects.python_object import PObject
@@ -12,6 +12,19 @@ from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
 from utils.color_utils import getDistinctColors
+
+
+class PackageColorMappingDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None, 'header':0}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df = ImportsEnrichedDataframe().data()
+        all_packages = sorted(list(set(df['package'].unique()).union(df['import_package'].dropna().unique())))
+        package_colors = getDistinctColors(len(all_packages), luminance=.75, saturation=.5)
+        res_df = pd.DataFrame({'package': all_packages, 'color': package_colors})
+        return res_df
+
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -81,57 +94,90 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
         return subgraph_docs
 
 
-class InProjectImportModuleGraphObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
-        df = InProjectImportModuleGraphDataframe().data()
-        modules, import_modules = df['module'].tolist(), df['import_module'].tolist()
+class PackageRelationsGraphObj(PlantUMLDiagramObj):
 
-        subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
-        docs = []
-        for subgraph in subgraphs:
-            _modules, _import_modules = [edge[0] for edge in subgraph.edges], [edge[1] for edge in subgraph.edges]
-            plantuml_doc_strings = ObjectRelationGraphBuilder(_modules, _import_modules).result()
-            docs.append(plantuml_doc_strings)
-        return docs
-
-
-class HighLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
-        df_filtered = df[df['is_project_module']][['package', 'import_package']]
+        df_filtered = df[df['is_project_module']][['module', 'package', 'import_package']].drop_duplicates()
         df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
 
-        # TODO pkg_items is ready but cannot be printed
-        # pkg_items = {k: v['module'] for k, v in df.groupby('package').agg({'module': set}).to_dict(orient='index').items()}
-        pkg_items = None
+        package_colors = {k: v['color'] for k, v in
+                          PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
 
-        plantuml_doc_strings = PackageRelationGraphBuilder(
-            df_agg['package'].tolist(),
-            df_agg['import_package'].tolist(),
-            df_agg['size'].tolist(),
-            package_items=pkg_items,
-        ).result()
-        return plantuml_doc_strings
+        total_imports_dict = {k: v['size'] for k, v in df_agg.groupby('package').agg({'size': 'sum'}).to_dict(orient='index').items()}
+        times_imported_dict = {k: v['size'] for k, v in df_agg.groupby('import_package').agg({'size': 'sum'}).to_dict(orient='index').items()}
+
+        df_agg['arrow_color'] = df_agg['import_package'].map(package_colors)
+
+        plantuml_doc = PlantUMLPackagesAndModulesBuilder()
+        for package, color in package_colors.items():
+            total_imports = total_imports_dict.get(package, 0)
+            times_imported = times_imported_dict.get(package, 0)
+
+            plantuml_doc.start_container('object', package, color)
+            plantuml_doc.add_note(f"imports: {total_imports}\nimported: {times_imported}")
+            plantuml_doc.end_container()
+
+        for package, import_package, size, arrow_color in df_agg.values.tolist():
+            plantuml_doc.add_relation(package, '--|>', import_package, arrow_color, f":{size}")
+
+        plantuml_doc_string = plantuml_doc.finish_and_return()
+        return plantuml_doc_string
 
 
-class MidLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
+class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
+        df = df[df['is_project_module'] & (~df['is_init_file'])]
+
+        package_colors = {k: v['color'] for k, v in
+                          PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
+        df['arrow_color'] = df['import_package'].map(package_colors)
+
         plantuml_doc = PlantUMLPackagesAndModulesBuilder()
 
-        all_packages = set(df['package'].unique()).union(df['import_package'].dropna().unique())
-        for package, color in zip(sorted(all_packages), getDistinctColors(len(all_packages), luminance=.75, saturation=.5)):
-            modules = df[(df['package'] == package) & (~df['is_init_file'])]['module'].unique()
+        for package, color in package_colors.items():
+            modules = df[df['package'] == package]['module'].unique()
 
             plantuml_doc.start_container('package', package, '<<Folder>>', color)
             for module in modules:
                 plantuml_doc.add_object('object', module)
             plantuml_doc.end_container()
 
-        df_filtered = df[df['is_project_module']][['module', 'import_module']].drop_duplicates()
-        modules, import_modules = df_filtered['module'].tolist(), df_filtered['import_module'].tolist()
-        for module, import_module in zip(modules, import_modules):
-            plantuml_doc.add_relation(module, '<|--', import_module)
+        df_filtered = df[['module', 'import_module', 'arrow_color']].drop_duplicates()
+        for module, import_module, arrow_color in df_filtered.values.tolist():
+            plantuml_doc.add_relation(module, '<|--', import_module, arrow_color)
+
+        plantuml_doc_string = plantuml_doc.finish_and_return()
+        return plantuml_doc_string
+
+
+class ModuleRelationGraphObj(PlantUMLDiagramObj):
+    def plantuml_docs(self):
+        df = ImportsEnrichedDataframe().data()
+        self._df = df[df['is_project_module']]
+        modules, import_modules = self._df['module'].tolist(), self._df['import_module'].tolist()
+        subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
+        docs = [self.produce_doc_for_modules(subgraph.nodes) for subgraph in subgraphs]
+        return docs
+
+    def produce_doc_for_modules(self, modules):
+        df = self._df[self._df['module'].isin(modules) | self._df['import_module'].isin(modules)]
+        plantuml_doc = PlantUMLPackagesAndModulesBuilder(separator='set separator none')
+
+        # TODO DictObjects for PackageColorMappingDataframe
+        package_colors = {k: v['color'] for k, v in PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
+
+        df_mods = pd.DataFrame(df[['module', 'package']].values.tolist()+df[['import_module', 'import_package']].values.tolist(),
+                               columns=['module', 'package']).drop_duplicates()
+        df_mods['color'] = df_mods['package'].map(package_colors)
+        for module, package, color in df_mods.values.tolist():
+            plantuml_doc.add_object('object', module, color)
+
+        df['arrow_color'] = df['import_package'].map(package_colors)
+        df = df[['module', 'import_module', 'arrow_color']].drop_duplicates()
+        for module, import_module, arrow_color in df.values.tolist():
+            plantuml_doc.add_relation(module, '<|--', import_module, arrow_color)
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
         return plantuml_doc_string
@@ -170,9 +216,9 @@ Total number of packages=**{total_n_packages}**, total number of modules=**{tota
 class DependencyReportObj(HTMLObject):
     content_dict = {
         'Analysis': DependencyAnalysisObj,
-        "Package Relations (high level view)": HighLevelPackagesRelationsGraphObj,
-        "Package Relations (mid level view)": MidLevelPackagesRelationsGraphObj,
-        "In project Import graphs": InProjectImportModuleGraphObj,
+        "Package Relations": PackageRelationsGraphObj,
+        "Package-Module Relations": PackageAndModuleRelationsGraphObj,
+        "Module relations": ModuleRelationGraphObj,
         "Commercial packages": PackagesImportModuleGraphObj,
     }
 
@@ -188,7 +234,7 @@ if __name__ == '__main__':
     # DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
-    # InProjectImportModuleGraphObj().data()
-    MidLevelPackagesRelationsGraphObj().data()
-    # HighLevelPackagesRelationsGraphObj().data()
+    # ModuleRelationGraphObj().data()
+    # PackageAndModuleRelationsGraphObj().data()
+    PackageRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
