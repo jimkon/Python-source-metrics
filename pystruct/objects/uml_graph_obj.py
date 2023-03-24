@@ -120,7 +120,7 @@ class MidLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
         plantuml_doc = PlantUMLPackagesAndModulesBuilder()
 
         all_packages = set(df['package'].unique()).union(df['import_package'].dropna().unique())
-        for package, color in zip(sorted(all_packages), getDistinctColors(len(all_packages), saturation=.5)):
+        for package, color in zip(sorted(all_packages), getDistinctColors(len(all_packages), luminance=.75, saturation=.5)):
             modules = df[(df['package'] == package) & (~df['is_init_file'])]['module'].unique()
 
             plantuml_doc.start_container('package', package, '<<Folder>>', color)

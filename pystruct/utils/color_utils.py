@@ -6,7 +6,7 @@ def HLSToRGB(h, l, s):
     return (int(255 * r), int(255 * g), int(255 * b))
 
 
-def getDistinctColors(n, luminance=0.75, saturation=1., to_hex=True):
+def getDistinctColors(n, luminance=0.5, saturation=1., to_hex=True):
     huePartition = 1.0 / (n + 1)
     rgb_colors = [HLSToRGB(huePartition * hue_value, luminance, saturation) for hue_value in range(0, n)]
     if to_hex:
