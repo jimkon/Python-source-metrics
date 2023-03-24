@@ -11,6 +11,7 @@ from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder,
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
+from utils.color_utils import getDistinctColors
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -119,10 +120,10 @@ class MidLevelPackagesRelationsGraphObj(PlantUMLDiagramObj):
         plantuml_doc = PlantUMLPackagesAndModulesBuilder()
 
         all_packages = set(df['package'].unique()).union(df['import_package'].dropna().unique())
-        for package in all_packages:
+        for package, color in zip(sorted(all_packages), getDistinctColors(len(all_packages), saturation=.5)):
             modules = df[(df['package'] == package) & (~df['is_init_file'])]['module'].unique()
 
-            plantuml_doc.start_container('package', package, '<<Folder>>')
+            plantuml_doc.start_container('package', package, '<<Folder>>', color)
             for module in modules:
                 plantuml_doc.add_object('object', module)
             plantuml_doc.end_container()
