@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import markdown
 
@@ -11,7 +13,8 @@ from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder,
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
-from utils.color_utils import getDistinctColors
+from pystruct.utils.color_utils import getDistinctColors
+from pystruct.utils.python_utils import is_python_builtin_package
 
 
 class PackageColorMappingDataframe(DataframeObject):
@@ -208,14 +211,17 @@ class ModuleDependencyStatsDataframe(DataframeObject):
         df = ImportsEnrichedDataframe().data()
         df_filtered = df[~df['unused_module']]
         df_filtered['external_package'] = df_filtered.apply(lambda x: x['import_root'] if x['ext_module'] else None, axis=1)
+        # TODO is_python_builtin_package is not checking only python built-ins
+        df_filtered['python_package'] = df_filtered.apply(lambda x: is_python_builtin_package(x['import_root']), axis=1)
 
         # df_mod_deps = pd.DataFrame({'name': sorted(df['module'].unique())})
         df_ext_packages = df_filtered[df_filtered['ext_module']].groupby('module').agg({'external_package': [pd.Series.unique, pd.Series.nunique]})
+        df_python_packages = df_filtered[df_filtered['python_package']].groupby('module').agg({'external_package': [pd.Series.unique, pd.Series.nunique]}).rename(columns={'external_package': 'python_package'})
         df_int_packages = df_filtered[df_filtered['int_module']].groupby('module').agg({'import_package': [pd.Series.unique, pd.Series.nunique]})
         df_int_modules = df_filtered[df_filtered['int_module']].groupby('module').agg({'import_module': [pd.Series.unique, pd.Series.nunique]})
 
-        df_mod_deps = pd.concat([df_ext_packages, df_int_packages, df_int_modules], axis=1)
-        df_mod_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c2) for c1, c2 in df_mod_deps.columns]
+        df_mod_deps = pd.concat([df_ext_packages, df_python_packages, df_int_packages, df_int_modules], axis=1)
+        df_mod_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c1+'s') for c1, c2 in df_mod_deps.columns]
         df_mod_deps = df_mod_deps.reset_index()
 
         df_mod_deps = df_mod_deps.fillna(0)
@@ -231,16 +237,20 @@ class PackageDependencyStatsDataframe(DataframeObject):
         return df_pack_deps
 
     def produce_packages_dataframe(self):
+        # TODO add cyclic imports (package imports itself)
         df = ImportsEnrichedDataframe().data()
         df_filtered = df[~df['unused_module']]
         df_filtered['external_package'] = df_filtered.apply(lambda x: x['import_root'] if x['ext_module'] else None, axis=1)
+        # TODO is_python_builtin_package is not checking only python built-ins
+        df_filtered['python_package'] = df_filtered.apply(lambda x: is_python_builtin_package(x['import_root']), axis=1)
 
         # df_mod_deps = pd.DataFrame({'name': sorted(df['module'].unique())})
         df_ext_packages = df_filtered[df_filtered['ext_module']].groupby('package').agg({'external_package': [pd.Series.unique, pd.Series.nunique]})
+        df_python_packages = df_filtered[df_filtered['python_package']].groupby('package').agg({'external_package': [pd.Series.unique, pd.Series.nunique]}).rename(columns={'external_package': 'python_package'})
         df_int_packages = df_filtered[df_filtered['int_module']].groupby('package').agg({'import_package': [pd.Series.unique, pd.Series.nunique]})
         df_int_modules = df_filtered[df_filtered['int_module']].groupby('package').agg({'import_module': [pd.Series.unique, pd.Series.nunique]})
 
-        df_pack_deps = pd.concat([df_ext_packages, df_int_packages, df_int_modules], axis=1)
+        df_pack_deps = pd.concat([df_ext_packages, df_python_packages, df_int_packages, df_int_modules], axis=1)
         df_pack_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c2) for c1, c2 in df_pack_deps.columns]
         df_pack_deps = df_pack_deps.reset_index()
 
