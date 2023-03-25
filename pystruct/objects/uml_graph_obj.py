@@ -98,7 +98,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
 
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
-        df_filtered = df[df['is_project_module']][['module', 'package', 'import_package']].drop_duplicates()
+        df_filtered = df[df['int_module']][['module', 'package', 'import_package']].drop_duplicates()
         df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
 
         package_colors = {k: v['color'] for k, v in
@@ -119,7 +119,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
             plantuml_doc.end_container()
 
         for package, import_package, size, arrow_color in df_agg.values.tolist():
-            plantuml_doc.add_relation(package, '--|>', import_package, arrow_color, f":{size}")
+            plantuml_doc.add_relation(package, '<|--', import_package, arrow_color, f":{size}")
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
         return plantuml_doc_string
@@ -128,7 +128,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
 class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
-        df = df[df['is_project_module'] & (~df['is_init_file'])]
+        df = df[df['int_module'] & (~df['is_init_file'])]
 
         package_colors = {k: v['color'] for k, v in
                           PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
@@ -155,7 +155,7 @@ class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
 class ModuleRelationGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
         df = ImportsEnrichedDataframe().data()
-        self._df = df[df['is_project_module']]
+        self._df = df[df['int_module']]
         modules, import_modules = self._df['module'].tolist(), self._df['import_module'].tolist()
         subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
         docs = [self.produce_doc_for_modules(subgraph.nodes) for subgraph in subgraphs]
@@ -196,21 +196,75 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
+class ModuleDependencyStatsDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df_mod_deps = self.produce_modules_dataframe()
+        return df_mod_deps
+
+    def produce_modules_dataframe(self):
+        df = ImportsEnrichedDataframe().data()
+        df_filtered = df[~df['unused_module']]
+        df_filtered['external_package'] = df_filtered.apply(lambda x: x['import_root'] if x['ext_module'] else None, axis=1)
+
+        # df_mod_deps = pd.DataFrame({'name': sorted(df['module'].unique())})
+        df_ext_packages = df_filtered[df_filtered['ext_module']].groupby('module').agg({'external_package': [pd.Series.unique, pd.Series.nunique]})
+        df_int_packages = df_filtered[df_filtered['int_module']].groupby('module').agg({'import_package': [pd.Series.unique, pd.Series.nunique]})
+        df_int_modules = df_filtered[df_filtered['int_module']].groupby('module').agg({'import_module': [pd.Series.unique, pd.Series.nunique]})
+
+        df_mod_deps = pd.concat([df_ext_packages, df_int_packages, df_int_modules], axis=1)
+        df_mod_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c2) for c1, c2 in df_mod_deps.columns]
+        df_mod_deps = df_mod_deps.reset_index()
+
+        df_mod_deps = df_mod_deps.fillna(0)
+        return df_mod_deps
+
+
+class PackageDependencyStatsDataframe(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df_pack_deps = self.produce_packages_dataframe()
+        return df_pack_deps
+
+    def produce_packages_dataframe(self):
+        df = ImportsEnrichedDataframe().data()
+        df_filtered = df[~df['unused_module']]
+        df_filtered['external_package'] = df_filtered.apply(lambda x: x['import_root'] if x['ext_module'] else None, axis=1)
+
+        # df_mod_deps = pd.DataFrame({'name': sorted(df['module'].unique())})
+        df_ext_packages = df_filtered[df_filtered['ext_module']].groupby('package').agg({'external_package': [pd.Series.unique, pd.Series.nunique]})
+        df_int_packages = df_filtered[df_filtered['int_module']].groupby('package').agg({'import_package': [pd.Series.unique, pd.Series.nunique]})
+        df_int_modules = df_filtered[df_filtered['int_module']].groupby('package').agg({'import_module': [pd.Series.unique, pd.Series.nunique]})
+
+        df_pack_deps = pd.concat([df_ext_packages, df_int_packages, df_int_modules], axis=1)
+        df_pack_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c2) for c1, c2 in df_pack_deps.columns]
+        df_pack_deps = df_pack_deps.reset_index()
+
+        df_pack_deps = df_pack_deps.fillna(0)
+        return df_pack_deps
+
+
 class DependencyAnalysisObj(HTMLObject):
     def build(self):
         df = ImportsEnrichedDataframe().data()
         df = df[(~df['is_no_imports']) & (~df['is_init_file'])]
         total_n_packages = df['package'].nunique()
         total_n_modules = df['module'].nunique()
-        com_packages = df[~df['is_project_module']]['import_root'].unique()
+        com_packages = df[~df['int_module']]['import_root'].unique()
         n_com_packages = len(com_packages)
-        n_module_deps = df[df['is_project_module']].groupby('module').agg({'import_module': pd.Series.nunique})['import_module'].sum()
-        n_package_deps = df[df['is_project_module']].groupby('package').agg({'import_package': pd.Series.nunique})['import_package'].sum()
-        return markdown.markdown("""# Dependency analysis    
+        n_module_deps = df[df['int_module']].groupby('module').agg({'import_module': pd.Series.nunique})['import_module'].sum()
+        n_package_deps = df[df['int_module']].groupby('package').agg({'import_package': pd.Series.nunique})['import_package'].sum()
+        markdown_to_html = markdown.markdown("""# Dependency analysis    
 Total number of packages=**{total_n_packages}**, total number of modules=**{total_n_modules}**   
         Commercial packages used = (**{n_com_packages}**){com_packages}   
         # of module dependencies = **{n_module_deps}**, # of package dependencies = **{n_package_deps}**
         """.format(**locals()))
+
+        return markdown_to_html+PackageDependencyStatsDataframe().data().to_html()+"<br>"+ModuleDependencyStatsDataframe().data().to_html()
 
 
 class DependencyReportObj(HTMLObject):
@@ -231,10 +285,12 @@ class DependencyReportObj(HTMLObject):
 
 
 if __name__ == '__main__':
-    # DependencyAnalysisObj().data()
+    ModuleDependencyStatsDataframe().data()
+    PackageDependencyStatsDataframe().data()
+    DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
     # ModuleRelationGraphObj().data()
     # PackageAndModuleRelationsGraphObj().data()
-    PackageRelationsGraphObj().data()
+    # PackageRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()

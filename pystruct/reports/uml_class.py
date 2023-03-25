@@ -95,6 +95,7 @@ class PlantUMLDocument:
     def _start_uml(self):
         self._add_line('@startuml')
         self._add_line('left to right direction')
+        # self._add_line('set separator .')
         # self._add_line('scale max 1024 width')
 
     def _end_uml(self):
@@ -151,7 +152,50 @@ class PlantUMLDocument:
 
     def add_object_relation(self, obj1, obj2, relation_str='-->', message=None):
         info_message = f": {message}" if message else ''
-        self._add_line(f"{obj1} {relation_str} {obj2}{info_message}")
+        self._add_line(f"{obj1} {relation_str} {obj2} {info_message}")
+
+    def finish_and_return(self):
+        self._end_uml()
+        return self._res_string
+
+
+class PlantUMLPackagesAndModulesBuilder:
+    def __init__(self, direction='left to right direction', separator='set separator .'):
+        self._res_string = ""
+        self._direction = direction
+        self._separator = separator
+
+        self._start_uml()
+
+    def _add_line(self, line=''):
+        self._res_string += line + "\n"
+
+    def _start_uml(self):
+        self._add_line('@startuml')
+        self._add_line('skinparam BackgroundColor #111111')
+        self._add_line(self._separator)
+        self._add_line(self._direction)
+
+    def _end_uml(self):
+        self._add_line('@enduml')
+
+    def add_object(self, type, name, *args):
+        args_str = ' '.join([str(arg) for arg in args])
+        self._add_line(f"{type} {name} {args_str}")
+
+    def start_container(self, type, name, *args):
+        args_str = ' '.join([str(arg) for arg in args])
+        self._add_line(f"{type} {name} {args_str} {{")
+
+    def end_container(self):
+        self._add_line('}')
+
+    def add_relation(self, obj_a, relation_type, obj_b, *args):
+        args_str = ' '.join([str(arg) for arg in args])
+        self._add_line(f"{obj_a} {relation_type} {obj_b} {args_str}")
+
+    def add_note(self, note):
+        self._add_line(note)
 
     def finish_and_return(self):
         self._end_uml()
@@ -223,9 +267,10 @@ class UMLClassRelationBuilder(TreeNodeVisitor):
 
 
 class ObjectRelationGraphBuilder:
-    def __init__(self, a_to, to_b):
+    def __init__(self, a_to, to_b, split_packages=True):
         self._left_objs = a_to
         self._right_objs = to_b
+        self._split_packages = split_packages
 
         self._all_objs = set(self._left_objs).union(set(self._right_objs))
 
