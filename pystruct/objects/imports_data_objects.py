@@ -89,7 +89,7 @@ class InProjectImportModuleGraphDataframe(DataframeObject):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
-        df_graph = df[df['is_project_module']][['module', 'import_module']].drop_duplicates()
+        df_graph = df[df['int_module']][['module', 'import_module']].drop_duplicates()
 
         return df_graph
 
@@ -101,7 +101,7 @@ class PackagesImportModuleGraphDataframe(DataframeObject):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
-        df_graph = df[~(df['is_project_module']) & ~(df['imports'] == 'no-imports')][['module', 'import_root']].drop_duplicates()
+        df_graph = df[~(df['int_module']) & ~(df['is_no_imports'])][['module', 'import_root']].drop_duplicates()
 
         return df_graph
 
