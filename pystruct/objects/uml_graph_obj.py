@@ -224,7 +224,13 @@ class ModuleDependencyStatsDataframe(DataframeObject):
         df_mod_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c1+'s') for c1, c2 in df_mod_deps.columns]
         df_mod_deps = df_mod_deps.reset_index()
 
-        df_mod_deps = df_mod_deps.fillna(0)
+        df_mod_deps['number_of_external_packages'].fillna(0, inplace=True)
+        df_mod_deps['number_of_python_packages'].fillna(0, inplace=True)
+        df_mod_deps['number_of_import_packages'].fillna(0, inplace=True)
+        df_mod_deps['number_of_import_modules'].fillna(0, inplace=True)
+
+        df_mod_deps = df_mod_deps.sort_values(by=['module'])
+
         return df_mod_deps
 
 
@@ -251,10 +257,16 @@ class PackageDependencyStatsDataframe(DataframeObject):
         df_int_modules = df_filtered[df_filtered['int_module']].groupby('package').agg({'import_module': [pd.Series.unique, pd.Series.nunique]})
 
         df_pack_deps = pd.concat([df_ext_packages, df_python_packages, df_int_packages, df_int_modules], axis=1)
-        df_pack_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c2) for c1, c2 in df_pack_deps.columns]
+        df_pack_deps.columns = [(c1+'s' if c2 == 'unique' else 'number_of_'+c1+'s') for c1, c2 in df_pack_deps.columns]
         df_pack_deps = df_pack_deps.reset_index()
 
-        df_pack_deps = df_pack_deps.fillna(0)
+        df_pack_deps['number_of_external_packages'].fillna(0, inplace=True)
+        df_pack_deps['number_of_python_packages'].fillna(0, inplace=True)
+        df_pack_deps['number_of_import_packages'].fillna(0, inplace=True)
+        df_pack_deps['number_of_import_modules'].fillna(0, inplace=True)
+
+        df_pack_deps = df_pack_deps.sort_values(by=['package'])
+
         return df_pack_deps
 
 
@@ -273,7 +285,6 @@ Total number of packages=**{total_n_packages}**, total number of modules=**{tota
         Commercial packages used = (**{n_com_packages}**){com_packages}   
         # of module dependencies = **{n_module_deps}**, # of package dependencies = **{n_package_deps}**
         """.format(**locals()))
-
         return markdown_to_html+PackageDependencyStatsDataframe().data().to_html()+"<br>"+ModuleDependencyStatsDataframe().data().to_html()
 
 
