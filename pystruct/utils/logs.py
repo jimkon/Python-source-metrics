@@ -51,6 +51,10 @@ def log(*args, verbosity=1, rgb=(200, 200, 200)):
         print(*colored_args)
 
 
+def log_white(*args, **kwargs):
+    log(*args, **kwargs, rgb=(200, 200, 200))
+
+
 def log_red(*args, **kwargs):
     log(*args, **kwargs, rgb=(200, 50, 50))
 
@@ -94,8 +98,20 @@ def timing_log(_func):
     return wrapper
 
 
+def log_general(*args, **kwargs):
+    log_white(*args, **kwargs)
+
+
 def log_disk_ops(*args, **kwargs):
     log_pink(*args, **kwargs)
+
+
+def log_memory_ops(*args, **kwargs):
+    log_yellow(*args, **kwargs)
+
+
+def log_processor_ops(*args, **kwargs):
+    log_cyan(*args, **kwargs)
 
 
 

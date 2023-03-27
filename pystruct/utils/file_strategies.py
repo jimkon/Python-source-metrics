@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from pystruct.configs import PATH_FILES_DIR
-from pystruct.utils.logs import log_yellow, log_green, log_pink, log_disk_ops
+from pystruct.utils import logs
 
 
 class AbstractFileStrategy(abc.ABC):
@@ -26,27 +26,27 @@ class AbstractFileStrategy(abc.ABC):
 
     def load(self):
         if self._cached_data:
-            log_green(f"(CACHED) {self.__class__.__name__}: File {self.filepath} is cached in memory.")
+            logs.log_memory_ops(f"[MEMORY] Cached {self.__class__.__name__}: File {self.filepath} is cached in memory.")
             return self._cached_data
         elif os.path.exists(self.filepath):
-            log_yellow(f"(LOADING) {self.__class__.__name__}: File {self.filepath} found in disk.")
+            logs.log_disk_ops(f"[DISK] Loading {self.__class__.__name__}: File {self.filepath} found in disk.")
             self._cached_data = self.load_from_file(self.filepath, **self._load_kwargs if self._load_kwargs else {})
             return self._cached_data
         else:
-            log_pink(f"(BUILDING) {self.__class__.__name__}: File {self.filepath} not found.")
+            logs.log_processor_ops(f"[CPU] Building {self.__class__.__name__}: File {self.filepath} not found.")
             return None
 
     def save(self, data):
-        log_yellow(f"(STORING) {self.__class__.__name__}: File {self.filepath} is created.")
+        logs.log_disk_ops(f"[DISK] {self.__class__.__name__}: File {self.filepath} is created.")
         self._cached_data = data
         self.save_to_file(data, self.filepath, **self._save_kwargs if self._save_kwargs else {})
 
     def delete_file(self):
         if os.path.exists(self.filepath):
-            log_disk_ops(f"[DISK] Deleting {self.filepath}...")
+            logs.log_disk_ops(f"[DISK] Deleting {self.filepath}...")
             os.remove(self.filepath)
         else:
-            log_disk_ops(f"[DISK] Deleting {self.filepath} failed. It doesn't exist.")
+            logs.log_disk_ops(f"[DISK] Deleting {self.filepath} failed. It doesn't exist.")
 
 
     @abc.abstractmethod
