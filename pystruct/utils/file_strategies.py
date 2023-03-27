@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 from pystruct.configs import PATH_FILES_DIR
-from pystruct.utils.logs import log_yellow, log_green, log_pink
+from pystruct.utils.logs import log_yellow, log_green, log_pink, log_disk_ops
 
 
 class AbstractFileStrategy(abc.ABC):
@@ -40,6 +40,14 @@ class AbstractFileStrategy(abc.ABC):
         log_yellow(f"(STORING) {self.__class__.__name__}: File {self.filepath} is created.")
         self._cached_data = data
         self.save_to_file(data, self.filepath, **self._save_kwargs if self._save_kwargs else {})
+
+    def delete_file(self):
+        if os.path.exists(self.filepath):
+            log_disk_ops(f"[DISK] Deleting {self.filepath}...")
+            os.remove(self.filepath)
+        else:
+            log_disk_ops(f"[DISK] Deleting {self.filepath} failed. It doesn't exist.")
+
 
     @abc.abstractmethod
     def load_from_file(self, filepath, **kwargs):

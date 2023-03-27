@@ -45,6 +45,10 @@ class AbstractObject(SingletonClass, abc.ABC):
 
         return self._data
 
+    def delete(self):
+        if self._file_strategy:
+            self._file_strategy.delete_file()
+
     @abc.abstractmethod
     def build(self):
         return None
