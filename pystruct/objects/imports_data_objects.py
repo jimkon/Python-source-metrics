@@ -60,7 +60,7 @@ class MostImportedProjectModules(HTMLTableObject):
 class MostImportedProjectPackages(HTMLTableObject):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
-        value_counts = df['import_package'].value_counts()
+        value_counts = df[df['is_internal']]['import_package'].value_counts()
         res_df = pd.DataFrame({
             "import_package": value_counts.index,
             '#_of_imports': value_counts.values
@@ -89,7 +89,7 @@ class InProjectImportModuleGraphDataframe(DataframeObject):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
-        df_graph = df[df['int_module']][['module', 'import_module']].drop_duplicates()
+        df_graph = df[df['is_internal']][['module', 'import_module']].drop_duplicates()
 
         return df_graph
 
@@ -101,7 +101,7 @@ class PackagesImportModuleGraphDataframe(DataframeObject):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
-        df_graph = df[~(df['int_module']) & ~(df['is_no_imports'])][['module', 'import_root']].drop_duplicates()
+        df_graph = df[~(df['is_internal']) & ~(df['is_no_imports'])][['module', 'import_root']].drop_duplicates()
 
         return df_graph
 
@@ -118,11 +118,11 @@ class ImportsStatsHTML(HTMLObject):
 
 
 if __name__ == "__main__":
-    # ImportsEnrichedDataframe().data()
+    ImportsEnrichedDataframe().data()
     # MostImportedPackages().data()
     # MostImportedProjectModules().data()
     # MostImportedProjectPackages().data()
     # UnusedModules().data()
     # InvalidImports().data()
-    InProjectImportModuleGraphDataframe().data()
-    PackagesImportModuleGraphDataframe().data()
+    # InProjectImportModuleGraphDataframe().data()
+    # PackagesImportModuleGraphDataframe().data()
