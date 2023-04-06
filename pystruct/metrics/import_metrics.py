@@ -1,3 +1,6 @@
+from pystruct.utils.python_utils import is_python_builtin_package
+
+
 def enrich_import_raw_df(df):
     # takes an imported path e.x "a.b.c" and keeps only the first component "a"
     df['import_root'] = df['imports'].apply(import_root)
@@ -8,11 +11,14 @@ def enrich_import_raw_df(df):
     # finds the root path of all the module paths
     project_root = common_root(df['module'])
 
-    # finds the imports referring to internal modules
-    df['int_module'] = df['import_root'].apply(lambda x: x == project_root)
+    # checks if it is an internal/in-project module
+    df['is_internal'] = df['import_root'].apply(lambda x: x == project_root)
 
-    # finds the imports referring to external modules
-    df['ext_module'] = ~df['int_module'] & ~df['is_no_imports']
+    # checks if it is an external/3rd-party python library
+    df['is_external'] = ~df['is_internal'] & ~df['is_no_imports']
+
+    # checks if it is a python built-in module
+    df['is_builtin'] = ~df['is_internal'] & ~df['is_no_imports']
 
     # finds the module import path for in-project imports
     df['import_module'] = df['imports'].apply(lambda x: element_with_longest_match(x, df['module'].unique()))
@@ -21,7 +27,7 @@ def enrich_import_raw_df(df):
     df['module_depth'] = df['module'].apply(lambda x: len(breakdown_import_path(x)))
 
     # check if imported in-project module exists and therefore if it is an valid import path
-    df['invalid_import'] = df['int_module'] & df['import_module'].isna()
+    df['invalid_import'] = df['is_internal'] & df['import_module'].isna()
 
     # check if a module is imported anywhere in the project
     df['unused_module'] = ~df['module'].isin(df['import_module'])
@@ -33,10 +39,11 @@ def enrich_import_raw_df(df):
     df['package'] = df['module'].apply(lambda x: '.'.join(breakdown_import_path(x)[:-1]))
 
     # finds the package path of each in-project import
-    df['import_package'] = df['import_module'].apply(lambda x: element_with_longest_match(x, df['package'].unique()))
+    df['import_package_temp'] = df['import_module'].apply(lambda x: element_with_longest_match(x, df['package'].unique()))
 
-    # similar to import_package column but for com packages too
-    df['import_any_package'] = df.apply(lambda row: row['import_package'] if row['int_module'] else row['import_root'], axis=1)
+    # similar to import_package_temp column but for com packages too
+    df['import_package'] = df.apply(lambda row: row['import_package_temp'] if row['is_internal'] else row['import_root'], axis=1)
+    del df['import_package_temp']
 
     df['is_init_file'] = df['module_name'] == '__init__'
 
