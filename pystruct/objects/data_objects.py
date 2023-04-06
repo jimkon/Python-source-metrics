@@ -11,7 +11,7 @@ class SingletonClass(object):
         if not hasattr(cls, 'instance'):
             cls.instance = super(SingletonClass, cls).__new__(cls, *args, **kwargs)
         else:
-            logs.log_general(f"(CACHED) Object {cls.__name__} is already initialized.")
+            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
         return cls.instance
 
 
