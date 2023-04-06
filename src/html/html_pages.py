@@ -2,8 +2,9 @@ import abc
 import base64
 import os
 import tempfile
-import matplotlib.pyplot as plt
 import uuid
+
+import matplotlib.pyplot as plt
 
 _TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 
@@ -185,3 +186,4 @@ class SimpleHTMLTable(HTMLTableBuilder):
         self.add_column_names(self._df.columns)
         for row in self._df.iterrows():
             self.add_row(row[1].values)
+
