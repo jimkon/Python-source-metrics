@@ -2,6 +2,7 @@ import abc
 
 import pandas as pd
 
+from pystruct.utils.data_mixins import HTMLMixin
 from pystruct.utils.file_strategies import DataframeFile, HTMLFile
 from pystruct.utils import logs
 
@@ -15,7 +16,7 @@ class SingletonClass(object):
         return cls.instance
 
 
-class AbstractObject(SingletonClass, abc.ABC):
+class AbstractObject(SingletonClass, abc.ABC, HTMLMixin):
     def __init__(self, file_strategy=None):
         self._file_strategy = file_strategy
         self._data = None
@@ -53,6 +54,9 @@ class AbstractObject(SingletonClass, abc.ABC):
     def build(self):
         return None
 
+    def to_html(self):
+        # TODO add a HTML mixin with a to_html method here, so all objects can have a default or a customisable html representation
+        return 'NOT_IMPLEMENTED'
 
 class DataframeObject(AbstractObject, abc.ABC):
     def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):
