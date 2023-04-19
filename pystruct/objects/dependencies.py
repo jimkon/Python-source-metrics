@@ -1,8 +1,21 @@
 import pandas as pd
 
-from pystruct.objects.imports_data_objects import ImportsEnrichedDataframe
 from pystruct.objects.data_objects import DataframeObject
-from pystruct.utils.python_utils import is_python_builtin_package
+from pystruct.objects.imports_data_objects import ImportsEnrichedDataframe
+
+
+class PackageAndModulesMapping(DataframeObject):
+    def __init__(self):
+        super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
+
+    def build(self):
+        df = ImportsEnrichedDataframe().data()
+        df = df[df['is_internal']]
+
+        df_1 = df[['package', 'module']]
+        df_2 = df[['import_package', 'import_module']].rename(columns={'import_module': 'module', 'import_package': 'package'})
+        df_res = pd.concat([df_1, df_2]).drop_duplicates()
+        return df_res
 
 
 def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):

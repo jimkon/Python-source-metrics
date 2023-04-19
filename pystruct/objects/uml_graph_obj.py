@@ -2,28 +2,47 @@ import markdown
 import pandas as pd
 
 from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
+from pystruct.metrics.import_metrics import breakdown_import_path
 from pystruct.objects.data_objects import AbstractObject, HTMLObject, DataframeObject
-from pystruct.objects.dependencies import PackageDependencyStatsDataframe, ModuleDependencyStatsDataframe
+from pystruct.objects.dependencies import PackageDependencyStatsDataframe, ModuleDependencyStatsDataframe, \
+    PackageAndModulesMapping
 from pystruct.objects.imports_data_objects import PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
 from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
     PlantUMLPackagesAndModulesBuilder
 from pystruct.utils.color_utils import getDistinctColors
+from pystruct.utils.data_mixins import JSONableMixin
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
 
 
-class PackageColorMappingDataframe(DataframeObject):
+class PackageColorMappingDataframe(DataframeObject, JSONableMixin):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header':0}, to_csv_kwargs={'index': False})
 
     def build(self):
         df = ImportsEnrichedDataframe().data()
         all_packages = sorted(list(set(df['package'].unique()).union(df[df['is_internal']]['import_package'].dropna().unique())))
-        package_colors = getDistinctColors(len(all_packages), luminance=.75, saturation=.5)
-        res_df = pd.DataFrame({'package': all_packages, 'color': package_colors})
+        package_colors = getDistinctColors(len(all_packages), luminance=.75, saturation=1.)
+        vlight = getDistinctColors(len(all_packages), luminance=.75, saturation=.125)
+        light = getDistinctColors(len(all_packages), luminance=.75, saturation=.25)
+        medium = getDistinctColors(len(all_packages), luminance=.75, saturation=.5)
+        strong = getDistinctColors(len(all_packages), luminance=.75, saturation=.75)
+        vstrong = getDistinctColors(len(all_packages), luminance=.75, saturation=.875)
+        res_df = pd.DataFrame({
+            'package': all_packages,
+            'color': package_colors,
+            'very_light': vlight,
+            'light': light,
+            'medium': medium,
+            'strong': strong,
+            'very_strong': vstrong
+        })
         return res_df
+
+    def to_json(self):
+        return self.data().set_index('package').to_dict(orient='index')
 
 
 class PlantUMLDiagramObj(AbstractObject):
@@ -94,62 +113,114 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 
 
 class PackageRelationsGraphObj(PlantUMLDiagramObj):
-
     def plantuml_docs(self):
-        df = ImportsEnrichedDataframe().data()
-        df_filtered = df[df['is_internal']][['module', 'package', 'import_package']].drop_duplicates()
-        df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
+        df_pkgs = self.produce_data()
 
-        package_colors = {k: v['color'] for k, v in
-                          PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
+        plantuml_doc = PlantUMLPackagesAndModulesBuilder(direction='top to bottom direction')
+        for row in df_pkgs.drop_duplicates(subset='package').iterrows():
+            row = row[1]
 
-        total_imports_dict = {k: v['size'] for k, v in df_agg.groupby('package').agg({'size': 'sum'}).to_dict(orient='index').items()}
-        times_imported_dict = {k: v['size'] for k, v in df_agg.groupby('import_package').agg({'size': 'sum'}).to_dict(orient='index').items()}
-
-        df_agg['arrow_color'] = df_agg['import_package'].map(package_colors)
-
-        plantuml_doc = PlantUMLPackagesAndModulesBuilder()
-        for package, color in package_colors.items():
-            total_imports = total_imports_dict.get(package, 0)
-            times_imported = times_imported_dict.get(package, 0)
-
+            package = row['package']
+            color = row['light']
             plantuml_doc.start_container('object', package, color)
-            plantuml_doc.add_note(f"imports: {total_imports}\nimported: {times_imported}")
+
+            total_internal_imports = int(row['total_imports']) if row['total_imports'] else 0
+            total_unique_internal_imports = int(row['number_of_internal_packages']) if row['number_of_internal_packages'] else 0
+            internal_imports = row['internal_packages'] if row['internal_packages'] else ''
+            total_external_imports = int(row['number_of_external_packages']) if row['number_of_external_packages'] else 0
+            external_imports = row['external_packages'] if row['external_packages'] else ''
+            python_builtins = int(row['number_of_builtin_packages']) if row['number_of_builtin_packages'] else 0
+            total_imported = int(row['total_imported']) if row['total_imported'] else 0
+            total_unique_imported = int(row['times_been_imported_from_packages']) if row['times_been_imported_from_packages'] else 0
+            imported_from = row['imported_from_packages'] if row['imported_from_packages'] else ''
+            plantuml_doc.add_note(  # TODO keep only package name on internals, not full package path
+                f"internal imports: {total_internal_imports}\n"
+                f"> ({total_unique_internal_imports} unique {self._keep_package_names(internal_imports)})\n"
+                f"other imports   : {total_external_imports}\n"
+                f"> {external_imports}   ({python_builtins} python builtins*)\n"
+                f"imported by     : {total_imported}\n"
+                f"> ({total_unique_imported} unique {self._keep_package_names(imported_from)}"
+            )
             plantuml_doc.end_container()
 
-        for package, import_package, size, arrow_color in df_agg.values.tolist():
-            plantuml_doc.add_relation(package, '<|--', import_package, arrow_color, f":{size}")
+        package_colors_dict = PackageColorMappingDataframe().to_json()
+        for row in df_pkgs[(df_pkgs['import_package'] != False)].drop_duplicates(subset=['package', 'import_package']).iterrows():
+            row = row[1]
+            package = row['package']
+            import_package = row['import_package']
+            arrow_color = package_colors_dict[import_package]['color']
+            num = int(row['size'])
+            plantuml_doc.add_relation(package, '<|-[thickness=2]-', import_package, arrow_color, f":{num}")
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
         return plantuml_doc_string
 
+    def produce_data(self):
+        df = ImportsEnrichedDataframe().data()
+        df_filtered = df[df['is_internal']][['module', 'package', 'import_package']].drop_duplicates()
+        df_agg = df_filtered.groupby(['package', 'import_package'], as_index=False).size()
+        df_stats = PackageDependencyStatsDataframe().data()
+        df_pkgs_colors = PackageColorMappingDataframe().data()
+
+        total_imports_dict = {k: v['size'] for k, v in
+                              df_agg.groupby('package').agg({'size': 'sum'}).to_dict(orient='index').items()}
+        times_imported_dict = {k: v['size'] for k, v in
+                               df_agg.groupby('import_package').agg({'size': 'sum'}).to_dict(orient='index').items()}
+
+        df_pkgs = df_stats.merge(df[['package', 'package_name']].drop_duplicates(), on='package', how='left').\
+            merge(df_pkgs_colors, on='package', how='left').\
+            merge(df_agg, on='package', how='left')
+        df_pkgs['total_imports'] = df_pkgs['package'].map(total_imports_dict)
+        df_pkgs['total_imported'] = df_pkgs['package'].map(times_imported_dict)
+
+        df_pkgs = df_pkgs.fillna(value=False)
+        return df_pkgs
+
+    @staticmethod
+    def _keep_package_names(packages):
+        if isinstance(packages, str): # TODO load dataframe types correctly
+            packages = packages[1:-1].replace("'", '').replace(' ', ',').split(',')
+        transform_func = lambda x: breakdown_import_path(x)[-1]
+        packages_names = [transform_func(package) for package in packages]
+        return packages_names
+
 
 class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
-        df = ImportsEnrichedDataframe().data()
-        df = df[df['is_internal'] & (~df['is_init_file'])]
-
-        package_colors = {k: v['color'] for k, v in
-                          PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
-        df['arrow_color'] = df['import_package'].map(package_colors)
+        df_pkgs, df_rels = self.produce_data()
 
         plantuml_doc = PlantUMLPackagesAndModulesBuilder()
 
-        for package, color in package_colors.items():
-            modules = df[df['package'] == package]['module'].unique()
-
+        for package, color, modules in df_pkgs.values.tolist():
             plantuml_doc.start_container('package', package, '<<Folder>>', color)
             for module in modules:
                 plantuml_doc.add_object('object', module)
             plantuml_doc.end_container()
 
-        df_filtered = df[['module', 'import_module', 'arrow_color']].drop_duplicates()
+        df_filtered = df_rels[~df_rels['import_module'].isna()][['module', 'import_module', 'very_strong']].drop_duplicates()
         for module, import_module, arrow_color in df_filtered.values.tolist():
-            plantuml_doc.add_relation(module, '<|--', import_module, arrow_color)
+            plantuml_doc.add_relation(module, '<|-[thickness=3]-', import_module, arrow_color)
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
         return plantuml_doc_string
 
+    def produce_data(self):
+        df_pkgs_colors = PackageColorMappingDataframe().data()
+        df_mods_and_pkgs = PackageAndModulesMapping().data()
+        df_agg = df_mods_and_pkgs\
+            .merge(df_pkgs_colors, on='package')\
+            .groupby('package')\
+            .agg({'light': 'first', 'module': pd.Series.unique})\
+            .reset_index()
+
+        df = ImportsEnrichedDataframe().data()
+        df_filtered = df[df['is_internal'] & (~df['is_init_file'])]
+        df_pkgs_colors = PackageColorMappingDataframe().data()
+        df_stats = ModuleDependencyStatsDataframe().data()
+
+        df_relations = df_stats.merge(df_filtered, on='module', how='left').merge(df_pkgs_colors, on='package', how='left')
+
+        return df_agg, df_relations
 
 class ModuleRelationGraphObj(PlantUMLDiagramObj):
     def plantuml_docs(self):
@@ -162,7 +233,7 @@ class ModuleRelationGraphObj(PlantUMLDiagramObj):
 
     def produce_doc_for_modules(self, modules):
         df = self._df[self._df['module'].isin(modules) | self._df['import_module'].isin(modules)]
-        plantuml_doc = PlantUMLPackagesAndModulesBuilder(separator='set separator none')
+        plantuml_doc = PlantUMLPackagesAndModulesBuilder(direction='top to bottom direction', separator='set separator none')
 
         # TODO DictObjects for PackageColorMappingDataframe
         package_colors = {k: v['color'] for k, v in PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
@@ -176,7 +247,7 @@ class ModuleRelationGraphObj(PlantUMLDiagramObj):
         df['arrow_color'] = df[df['is_internal']]['import_package'].map(package_colors)
         df = df[['module', 'import_module', 'arrow_color']].drop_duplicates()
         for module, import_module, arrow_color in df.values.tolist():
-            plantuml_doc.add_relation(module, '<|--', import_module, arrow_color)
+            plantuml_doc.add_relation(module, '<|-[thickness=2]-', import_module, arrow_color)
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
         return plantuml_doc_string
@@ -193,9 +264,6 @@ class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
             doc = ObjectRelationGraphBuilder(module, import_root).result()
             plantuml_doc_strings.append(doc)
         return plantuml_doc_strings
-
-
-
 
 
 class DependencyAnalysisObj(HTMLObject):
@@ -234,12 +302,12 @@ class DependencyReportObj(HTMLObject):
 
 
 if __name__ == '__main__':
-    ModuleDependencyStatsDataframe().data()
-    PackageDependencyStatsDataframe().data()
-    DependencyAnalysisObj().data()
+    # ModuleDependencyStatsDataframe().data()
+    # PackageDependencyStatsDataframe().data()
+    # DependencyAnalysisObj().data()
     # UMLClassDiagramObj().data()
     # UMLClassRelationDiagramObj().data()
-    # ModuleRelationGraphObj().data()
-    # PackageAndModuleRelationsGraphObj().data()
-    # PackageRelationsGraphObj().data()
+    ModuleRelationGraphObj().data()
+    PackageAndModuleRelationsGraphObj().data()
+    PackageRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()
