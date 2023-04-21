@@ -2,7 +2,7 @@ import os.path
 import tempfile
 from functools import lru_cache
 
-from git import Repo
+# from git import Repo
 
 from pystruct.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR, PATH_GIT_COPY_DIR
 from pystruct.utils import path_utils
@@ -88,4 +88,5 @@ class CopyCode:
 
 if __name__ == "__main__":
     # grab_code('https://github.com/jimkon/Python-source-metrics.git')
-    CopyCode(r"C:\Users\jim\PycharmProjects\Python-source-metrics\pystruct")
+    grab_code("/Users/dkontzedakis/PycharmProjects/Python-source-metrics/pystruct")
+    # CopyCode(r"C:\Users\jim\PycharmProjects\Python-source-metrics\pystruct")

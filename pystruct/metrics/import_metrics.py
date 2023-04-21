@@ -38,6 +38,9 @@ def enrich_import_raw_df(df):
     # finds the package path of each module
     df['package'] = df['module'].apply(lambda x: '.'.join(breakdown_import_path(x)[:-1]))
 
+    # short package name ex a.b.c -> c
+    df['package_name'] = df['package'].apply(lambda x: breakdown_import_path(x)[-1])
+
     # finds the package path of each in-project import
     df['import_package_temp'] = df['import_module'].apply(lambda x: element_with_longest_match(x, df['package'].unique()))
 

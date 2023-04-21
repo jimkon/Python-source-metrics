@@ -1,7 +1,7 @@
 FROM python:3.8.16-slim
 
 #USER admin
-
+#install git first
 #WORKDIR  /server
 RUN python -m pip install --upgrade pip
 COPY requirements.txt .

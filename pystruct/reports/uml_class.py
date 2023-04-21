@@ -172,7 +172,8 @@ class PlantUMLPackagesAndModulesBuilder:
 
     def _start_uml(self):
         self._add_line('@startuml')
-        self._add_line('skinparam BackgroundColor #111111')
+        self._add_line('skinparam BackgroundColor #dedede')
+        # self._add_line('skinparam ObjectFontSize 10')
         self._add_line(self._separator)
         self._add_line(self._direction)
 

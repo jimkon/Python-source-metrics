@@ -13,7 +13,7 @@
 {% if debug_flag %}
     <h2>Debug is enabled</h2>
     {% for _cls in all_objects %}
-        <a href={{url_for('build_obj', obj_class=_cls)}}>{{_cls}}</a>
+        <a href={{url_for('build_obj', obj_class=_cls)}}>{{_cls}}</a><br>
     {% endfor %}
 
 {% endif %}
