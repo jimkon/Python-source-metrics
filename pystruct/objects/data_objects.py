@@ -16,7 +16,7 @@ class SingletonClass(object):
         return cls.instance
 
 
-class AbstractObject(SingletonClass, abc.ABC, HTMLMixin):
+class AbstractObject(SingletonClass, abc.ABC):
     def __init__(self, file_strategy=None):
         self._file_strategy = file_strategy
         self._data = None
