@@ -44,7 +44,7 @@ def obj(obj_class):
 def build_obj(obj_class):
     cls = getattr(sys.modules[__name__], obj_class)
     cls().delete()
-    html_object = cls().build()
+    html_object = cls().data()
     return render_template('objects.html', **locals())
 
 
