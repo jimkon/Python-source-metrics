@@ -58,3 +58,36 @@ th {
   background-color: #04AA6D;
   color: white;
 }
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  background-color: #343a40;
+  color: #fff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: normal;
+  text-align: left;
+}
+
+table th, table td {
+  padding: 0.5rem;
+  vertical-align: middle;
+  border: 1px solid #adb5bd;
+}
+
+table th {
+  background-color: #212529;
+  font-weight: bold;
+}
+
+table tbody tr:nth-of-type(even) {
+  background-color: #212529;
+}
+
+table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #adb5bd;
+}
