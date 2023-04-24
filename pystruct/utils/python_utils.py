@@ -4,6 +4,8 @@ from urllib.request import urlopen
 import pkgutil
 from functools import lru_cache
 import logging
+import sys
+
 
 @lru_cache
 def all_python_builtin_packages():
@@ -38,3 +40,11 @@ def fetch_python_builtin_packages_from_python_docs():
     packages = [pkg.split(r'library/')[1].split(r'.html')[0] for pkg in re.findall('<a href=\"library/\w+\.html', html)]
     return packages
 
+
+def get_class_from_class_name(class_name):
+    return getattr(sys.modules[__name__], class_name)
+
+
+def subclasses_of_class(cls):
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in subclasses_of_class(c)])

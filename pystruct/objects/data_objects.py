@@ -2,21 +2,31 @@ import abc
 
 import pandas as pd
 
-from pystruct.utils.data_mixins import HTMLMixin
-from pystruct.utils.file_strategies import DataframeFile, HTMLFile
 from pystruct.utils import logs
+from pystruct.utils.data_mixins import PrettifiedClassNameMixin
+from pystruct.utils.file_strategies import DataframeFile, HTMLFile
+from pystruct.utils.python_utils import subclasses_of_class
+
+
+def get_all_object_classes():
+    return subclasses_of_class(AbstractObject)
+
+
+def get_all_concrete_object_classes():
+    return [_cls for _cls in get_all_object_classes()
+            if (not isinstance(_cls, abc.ABC))]
 
 
 class SingletonClass(object):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
             cls.instance = super(SingletonClass, cls).__new__(cls, *args, **kwargs)
-        else:
-            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
+        # else:
+        #     logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
         return cls.instance
 
 
-class AbstractObject(SingletonClass, abc.ABC, HTMLMixin):
+class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
     def __init__(self, file_strategy=None):
         self._file_strategy = file_strategy
         self._data = None
