@@ -36,7 +36,7 @@ def main():
 @app.route('/obj/<obj_class>')
 def obj(obj_class):
     cls = getattr(sys.modules[__name__], obj_class)
-    html_object = cls().data()
+    html_object = cls().to_html()
     return render_template('objects.html', **locals())
 
 
@@ -44,7 +44,7 @@ def obj(obj_class):
 def build_obj(obj_class):
     cls = getattr(sys.modules[__name__], obj_class)
     cls().delete()
-    html_object = cls().data()
+    html_object = cls().to_html()
     return render_template('objects.html', **locals())
 
 

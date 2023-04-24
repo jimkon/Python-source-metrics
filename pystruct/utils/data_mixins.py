@@ -7,7 +7,6 @@ class JSONableMixin(abc.ABC):
         pass
 
 
-class HTMLMixin(abc.ABC):
-    @abc.abstractmethod
+class HTMLMixin:
     def to_html(self):
-        pass
+        return f"<h2>to_html:'{self}'</h2>"

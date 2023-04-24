@@ -16,7 +16,7 @@ class SingletonClass(object):
         return cls.instance
 
 
-class AbstractObject(SingletonClass, abc.ABC):
+class AbstractObject(SingletonClass, abc.ABC, HTMLMixin):
     def __init__(self, file_strategy=None):
         self._file_strategy = file_strategy
         self._data = None
@@ -55,8 +55,8 @@ class AbstractObject(SingletonClass, abc.ABC):
         return None
 
     def to_html(self):
-        # TODO add a HTML mixin with a to_html method here, so all objects can have a default or a customisable html representation
-        return 'NOT_IMPLEMENTED'
+        return f"to_html:{self.data()}"
+
 
 class DataframeObject(AbstractObject, abc.ABC):
     def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):
@@ -71,6 +71,9 @@ class DataframeObject(AbstractObject, abc.ABC):
             raise TypeError(f"Wrong return type: build method of DataframeObject objects must return pandas.DataFrame or pandas.Series. got {type(build_res)}")
         return build_res
 
+    def to_html(self):
+        return f"to_html:{self.dataframe.to_html()}"
+
 
 class HTMLObject(AbstractObject, abc.ABC):
     def __init__(self):
@@ -82,6 +85,9 @@ class HTMLObject(AbstractObject, abc.ABC):
         if not isinstance(build_res, str):
             raise TypeError(f"Wrong return type: build method of HTMLObject objects must return string. got {type(build_res)}")
         return build_res
+
+    def to_html(self):
+        return self.html
 
 
 class HTMLTableObject(HTMLObject, abc.ABC):
