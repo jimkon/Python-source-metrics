@@ -17,7 +17,7 @@ class TestPackageDependencyStatsDataframe(unittest.TestCase):
         })
         expected_df = pd.DataFrame({
             'package': ['a1', 'a1.b1', 'a2'],
-            'external_packages': [['ext_1', 'ext_2'], ['ext_1'], ['ext_1', 'ext_2', 'ext_3']],
+            'external_packages': ['ext_1,ext_2', 'ext_1', 'ext_1,ext_2,ext_3'],
             'number_of_external_packages': [2, 1, 3],
         }).set_index('package')
 
@@ -35,7 +35,7 @@ class TestPackageDependencyStatsDataframe(unittest.TestCase):
         })
         expected_df = pd.DataFrame({
             'package': ['a2', 'a3'],
-            'builtin_packages': [['builtin_1', 'builtin_2'], ['builtin_1']],
+            'builtin_packages': ['builtin_1,builtin_2', 'builtin_1'],
             'number_of_builtin_packages': [2, 1],
         }).set_index('package')
         obj = PackageDependencyStatsDataframe()
@@ -52,7 +52,7 @@ class TestPackageDependencyStatsDataframe(unittest.TestCase):
         })
         expected_df = pd.DataFrame({
             'package': ['a2', 'a3'],
-            'internal_packages': [['int_1', 'int_2'], ['int_2']],
+            'internal_packages': ['int_1,int_2', 'int_2'],
             'number_of_internal_packages': [2, 1],
         }).set_index('package')
         obj = PackageDependencyStatsDataframe()
@@ -69,7 +69,7 @@ class TestPackageDependencyStatsDataframe(unittest.TestCase):
         })
         expected_df = pd.DataFrame({
             'package': ['a2', 'a3'],
-            'internal_modules': [['int_1', 'int_2'], ['int_2']],
+            'internal_modules': ['int_1,int_2', 'int_2'],
             'number_of_internal_modules': [2, 1],
         }).set_index('package')
         obj = PackageDependencyStatsDataframe()
@@ -101,7 +101,7 @@ class TestPackageDependencyStatsDataframe(unittest.TestCase):
         })
         expected_df = pd.DataFrame({
             'package': ['int_1', 'int_2'],
-            'imported_from_packages': [['a2'], ['a2', 'a3']],
+            'imported_from_packages': ['a2', 'a2,a3'],
             'times_been_imported_from_packages': [1, 2],
         }).set_index('package')
         obj = PackageDependencyStatsDataframe()

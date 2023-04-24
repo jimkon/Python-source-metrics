@@ -4,6 +4,18 @@ from pystruct.objects.data_objects import DataframeObject
 from pystruct.objects.imports_data_objects import ImportsEnrichedDataframe
 
 
+def _unique_sorted_string_agg(items):
+    return ','.join(list(sorted(set(items))))
+
+
+def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):
+    agg_rows = imports_df.groupby(groupby_column).agg({agg_column: [_unique_sorted_string_agg, pd.Series.nunique]})
+    agg_rows.columns = [f'{new_column_name}s', f'number_of_{new_column_name}s']
+    agg_rows[f'number_of_{new_column_name}s'].fillna(0, inplace=True)
+    # agg_rows[f'number_of_{new_column_name}s'] = agg_rows[f'number_of_{new_column_name}s'].astype(int)
+    return agg_rows
+
+
 class PackageAndModulesMapping(DataframeObject):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
@@ -16,14 +28,6 @@ class PackageAndModulesMapping(DataframeObject):
         df_2 = df[['import_package', 'import_module']].rename(columns={'import_module': 'module', 'import_package': 'package'})
         df_res = pd.concat([df_1, df_2]).drop_duplicates()
         return df_res
-
-
-def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):
-    agg_rows = imports_df.groupby(groupby_column).agg({agg_column: [pd.Series.unique, pd.Series.nunique]})
-    agg_rows.columns = [f'{new_column_name}s', f'number_of_{new_column_name}s']
-    agg_rows[f'number_of_{new_column_name}s'].fillna(0, inplace=True)
-    # agg_rows[f'number_of_{new_column_name}s'] = agg_rows[f'number_of_{new_column_name}s'].astype(int)
-    return agg_rows
 
 
 class PackageDependencyStatsDataframe(DataframeObject):

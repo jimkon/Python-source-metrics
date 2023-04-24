@@ -126,20 +126,24 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
 
             total_internal_imports = int(row['total_imports']) if row['total_imports'] else 0
             total_unique_internal_imports = int(row['number_of_internal_packages']) if row['number_of_internal_packages'] else 0
-            internal_imports = row['internal_packages'] if row['internal_packages'] else ''
+            internal_imports = self._present_packages(row['internal_packages'], remove_package_root=True) if row['internal_packages'] else ''
             total_external_imports = int(row['number_of_external_packages']) if row['number_of_external_packages'] else 0
-            external_imports = row['external_packages'] if row['external_packages'] else ''
-            python_builtins = int(row['number_of_builtin_packages']) if row['number_of_builtin_packages'] else 0
+            external_imports = self._present_packages(row['external_packages']) if row['external_packages'] else ''
+            total_python_builtins = int(row['number_of_builtin_packages']) if row['number_of_builtin_packages'] else 0
+            python_builtins = self._present_packages(row['builtin_packages']) if row['builtin_packages'] else ''
             total_imported = int(row['total_imported']) if row['total_imported'] else 0
             total_unique_imported = int(row['times_been_imported_from_packages']) if row['times_been_imported_from_packages'] else 0
-            imported_from = row['imported_from_packages'] if row['imported_from_packages'] else ''
+            imported_from = self._present_packages(row['imported_from_packages'], remove_package_root=True) if row['imported_from_packages'] else ''
             plantuml_doc.add_note(  # TODO keep only package name on internals, not full package path
-                f"internal imports: {total_internal_imports}\n"
-                f"> ({total_unique_internal_imports} unique {self._keep_package_names(internal_imports)})\n"
-                f"other imports   : {total_external_imports}\n"
-                f"> {external_imports}   ({python_builtins} python builtins*)\n"
-                f"imported by     : {total_imported}\n"
-                f"> ({total_unique_imported} unique {self._keep_package_names(imported_from)}"
+                f"IMPORTS\n"
+                f"Internal: {total_internal_imports}  ({total_unique_internal_imports} unique)\n"
+                f"> {internal_imports})\n"
+                f"Python built-in: {total_python_builtins}\n"
+                f"> {python_builtins}\n"
+                f"Other: {total_external_imports}\n"
+                f"> {external_imports}\n"
+                f"Imported by: {total_imported}    ({total_unique_imported} unique)\n"
+                f"> {imported_from}"
             )
             plantuml_doc.end_container()
 
@@ -167,7 +171,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
         times_imported_dict = {k: v['size'] for k, v in
                                df_agg.groupby('import_package').agg({'size': 'sum'}).to_dict(orient='index').items()}
 
-        df_pkgs = df_stats.merge(df[['package', 'package_name']].drop_duplicates(), on='package', how='left').\
+        df_pkgs = df_stats.merge(df[['package']].drop_duplicates(), on='package', how='left').\
             merge(df_pkgs_colors, on='package', how='left').\
             merge(df_agg, on='package', how='left')
         df_pkgs['total_imports'] = df_pkgs['package'].map(total_imports_dict)
@@ -177,12 +181,80 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
         return df_pkgs
 
     @staticmethod
+    def _present_packages(packages_str, remove_package_root=False):
+        packages = packages_str.split(',')
+        if remove_package_root:
+            packages = PackageRelationsGraphObj._keep_package_names(packages)
+        packages_sorted = sorted(packages)
+        result_str = PackageRelationsGraphObj._create_multiline_string(packages_sorted)
+        print(result_str)
+        return result_str
+
+    @staticmethod
     def _keep_package_names(packages):
-        if isinstance(packages, str): # TODO load dataframe types correctly
-            packages = packages[1:-1].replace("'", '').replace(' ', ',').split(',')
         transform_func = lambda x: breakdown_import_path(x)[-1]
         packages_names = [transform_func(package) for package in packages]
         return packages_names
+
+    @staticmethod
+    def _create_multiline_string(strings, max_length=30, seperator=', '):
+        """ ChatGPT
+        Takes in a list of strings and concatenates them into a multiline string with a maximum line length
+        specified by `max_length`. The `seperator` parameter is used to separate the individual strings in the
+        concatenated string.
+
+        Args:
+            strings (list): A list of strings to concatenate into a multiline string.
+            max_length (int): The maximum length of each line in the multiline string. Defaults to 30.
+            seperator (str): The string to use to separate each string in the concatenated string. Defaults to ", ".
+
+        Returns:
+            str: The concatenated multiline string.
+
+        Example:
+            >>> strings = ["This", " is a long string", "This is another long string", "Yet another long string"]
+            >>> _create_multiline_string(strings, max_length=20, seperator='; ')
+            'This is a long string; \n> This is another long string; \n> Yet another long string'
+
+        def test_create_multiline_string():
+            # Test case 1: Strings fit within maximum line length
+            strings = ["This is a long string", "This is another long string", "Yet another long string"]
+            expected_output = "This is a long string, This is another long string, Yet another long string"
+            assert _create_multiline_string(strings, max_length=30, seperator=', ') == expected_output
+
+            # Test case 2: Strings need to be split into multiple lines
+            strings = ["This is a long string", "This is another long string", "Yet another long string"]
+            expected_output = "This is a long string,\n> This is another long string,\n> Yet another long string"
+            assert _create_multiline_string(strings, max_length=20, seperator=', ') == expected_output
+
+            # Test case 3: Empty list of strings
+            strings = []
+            expected_output = ""
+            assert _create_multiline_string(strings, max_length=30, seperator=', ') == expected_output
+
+            # Test case 4: Single string that is longer than max line length
+            strings = ["This is a very long string that exceeds the maximum line length"]
+            expected_output = "This is a very long string that exceeds the maximum line length"
+            assert _create_multiline_string(strings, max_length=20, seperator=', ') == expected_output
+
+            # Test case 5: Custom separator
+            strings = ["This is a long string", "This is another long string", "Yet another long string"]
+            expected_output = "This is a long string; \n> This is another long string; \n> Yet another long string"
+            assert _create_multiline_string(strings, max_length=20, seperator='; ') == expected_output
+        """
+        output = ''
+        current_line_length = 0
+
+        for s in strings:
+            if current_line_length + len(s) <= max_length:
+                output += (seperator if len(output) > 0 else '')+s
+                current_line_length += len(s)
+            else:
+                output += ',\n> ' + s
+                current_line_length = len(s)
+
+        return output
+
 
 
 class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
