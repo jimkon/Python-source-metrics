@@ -3,7 +3,7 @@ import abc
 import pandas as pd
 
 from pystruct.utils import logs
-from pystruct.utils.data_mixins import PrettifiedClassNameMixin
+from pystruct.utils.mixins import PrettifiedClassNameMixin
 from pystruct.utils.file_strategies import DataframeFile, HTMLFile
 from pystruct.utils.python_utils import subclasses_of_class
 

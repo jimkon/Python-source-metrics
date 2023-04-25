@@ -11,7 +11,7 @@ from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
     PlantUMLPackagesAndModulesBuilder
 from pystruct.utils.color_utils import getDistinctColors
-from pystruct.utils.data_mixins import JSONableMixin
+from pystruct.utils.mixins import JSONableMixin
 from pystruct.utils.file_strategies import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
