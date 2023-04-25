@@ -5,16 +5,6 @@ import pandas as pd
 from pystruct.utils import logs
 from pystruct.utils.mixins import PrettifiedClassNameMixin
 from pystruct.utils.file_strategies import DataframeFile, HTMLFile
-from pystruct.utils.python_utils import subclasses_of_class
-
-
-def get_all_object_classes():
-    return subclasses_of_class(AbstractObject)
-
-
-def get_all_concrete_object_classes():
-    return [_cls for _cls in get_all_object_classes()
-            if (not isinstance(_cls, abc.ABC))]
 
 
 class SingletonClass(object):
