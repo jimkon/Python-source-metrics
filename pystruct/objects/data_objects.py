@@ -90,6 +90,13 @@ class HTMLObject(AbstractObject, abc.ABC):
         return self.html
 
 
+# TODO Report objects
+# TODO JSON objects
+# TODO plantUMLDOc objects
+# TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
+# TODO similar for umlgrapphs
+
+
 class HTMLTableObject(HTMLObject, abc.ABC):
     def __init__(self):
         super().__init__()

@@ -14,8 +14,6 @@ app.config['SECRET_KEY'] = 'test_key'
 @app.route('/')
 def main():
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
-    print(table_of_content_dict)
-    print(url_for('obj',  obj_class_name='UMLClassDiagramObj'))
     debug_flag = app.debug
     all_objects = sorted([_cls.prettified_class_name() for _cls in get_all_concrete_object_classes()])
     return render_template('index.html', **locals())
