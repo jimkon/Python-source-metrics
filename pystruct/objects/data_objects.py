@@ -59,6 +59,18 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
         return f"to_html:{self.data()}"
 
 
+class TextObject(AbstractObject, abc.ABC):
+    @property
+    def text(self):
+        build_res = self.build()
+        if not isinstance(build_res, str):
+            raise TypeError(f"Wrong return type: build method of HTMLObject objects must return string. got {type(build_res)}")
+        return build_res
+
+    def to_html(self):
+        return f"<h2>Text:</h2>{self.text}"
+
+
 class DataframeObject(AbstractObject, abc.ABC):
     def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):  # TODO default values for DF objects
         super().__init__(DataframeFile(self,
