@@ -108,7 +108,6 @@ class HTMLObject(AbstractObject, abc.ABC):
 
 
 # TODO Report objects
-# TODO JSON objects
 # TODO plantUMLDOc objects
 # TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
 # TODO similar for umlgrapphs
