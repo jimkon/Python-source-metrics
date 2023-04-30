@@ -3,7 +3,7 @@ import os
 from pystruct.configs import PATH_CODE_COPY_DIR
 from pystruct.objects.data_objects import AbstractObject
 from pystruct.python.python_source_obj import PythonSourceObj
-from pystruct.utils.file_strategies import JsonFile
+from pystruct.utils.file_adapters import JsonFile
 
 
 class PObject(AbstractObject):

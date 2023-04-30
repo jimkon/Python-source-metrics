@@ -1,10 +1,11 @@
 import abc
 
 import pandas as pd
+from json2html import json2html
 
 from pystruct.utils import logs
 from pystruct.utils.mixins import PrettifiedClassNameMixin
-from pystruct.utils.file_strategies import DataframeFile, HTMLFile
+from pystruct.utils.file_adapters import DataframeFile, HTMLFile, JsonFile
 
 
 class SingletonClass(object):
@@ -17,8 +18,8 @@ class SingletonClass(object):
 
 
 class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
-    def __init__(self, file_strategy=None):
-        self._file_strategy = file_strategy
+    def __init__(self, file_adapter=None):
+        self._file_adapter = file_adapter
         self._data = None
 
     def data(self):
@@ -33,22 +34,22 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
         if self._data is not None:  # if self._data breaks in Dataframes
             return self._data
 
-        if self._file_strategy:
-            self._data = self._file_strategy.load()
+        if self._file_adapter:
+            self._data = self._file_adapter.load()
 
         if self._data is None:
             logs.log_general(f"{self.__class__.__name__} object is building.")
             self._data = self.build()
             logs.log_general(f"{self.__class__.__name__} object finished.")
 
-            if self._file_strategy and self._data is not None:  # if self._data breaks in Dataframes
-                self._file_strategy.save(self._data)
+            if self._file_adapter and self._data is not None:  # if self._data breaks in Dataframes
+                self._file_adapter.save(self._data)
 
         return self._data
 
     def delete(self):
-        if self._file_strategy:
-            self._file_strategy.delete_file()
+        if self._file_adapter:
+            self._file_adapter.delete_file()
 
     @abc.abstractmethod
     def build(self):
@@ -59,7 +60,7 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
 
 
 class DataframeObject(AbstractObject, abc.ABC):
-    def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):
+    def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):  # TODO default values for DF objects
         super().__init__(DataframeFile(self,
                                        save_kwargs=to_csv_kwargs,
                                        load_kwargs=read_csv_kwargs))
@@ -73,6 +74,22 @@ class DataframeObject(AbstractObject, abc.ABC):
 
     def to_html(self):
         return f"to_html:{self.dataframe.to_html()}"
+
+
+class JSONObject(AbstractObject, abc.ABC):
+    def __init__(self):
+        super().__init__(JsonFile)
+
+    @property
+    def json(self):
+        build_res = self.build()
+        if not isinstance(build_res, list) and not isinstance(build_res, dict):
+            raise TypeError(
+                f"Wrong return type: build method of JSONObject objects must return a JSON object (list of dicts or dict). got {type(build_res)}")
+        return build_res
+
+    def to_html(self):
+        return f"to_html:{json2html.convert(json = self.json)}"
 
 
 class HTMLObject(AbstractObject, abc.ABC):
