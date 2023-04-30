@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import patch
 
-import pystruct.utils.file_strategies as fs
+import pystruct.utils.file_adapters as fs
 
 
 class ExampleObject:
     pass
 
 
-class ExampleConcreteFileStrategy(fs.AbstractFileStrategy):
+class ExampleConcreteFileAdapter(fs.AbstractFileAdapter):
     def load_from_file(self, filepath, **kwargs):
         return 'example_data'
 
@@ -19,7 +19,7 @@ class ExampleConcreteFileStrategy(fs.AbstractFileStrategy):
 class TestAbstractFileStrategy(unittest.TestCase):
     def setUp(self):
         self.example_obj = ExampleObject()
-        self.file_strategy = ExampleConcreteFileStrategy(self.example_obj,
+        self.file_strategy = ExampleConcreteFileAdapter(self.example_obj,
                                                          'example_extension')
 
     def test_filename(self):
@@ -49,8 +49,8 @@ class TestAbstractFileStrategy(unittest.TestCase):
             self.assertEqual(self.file_strategy.load(), None)
 
     def test_save(self):
-        with patch.object(ExampleConcreteFileStrategy, 'save_to_file') as mock_save_to_file:
-            ExampleConcreteFileStrategy(None, None, None)
+        with patch.object(ExampleConcreteFileAdapter, 'save_to_file') as mock_save_to_file:
+            ExampleConcreteFileAdapter(None, None, None)
             self.file_strategy.save('example_save_data')
 
             self.assertEqual(self.file_strategy._cached_data, 'example_save_data')

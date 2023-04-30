@@ -8,7 +8,7 @@ from pystruct.configs import PATH_FILES_DIR
 from pystruct.utils import logs
 
 
-class AbstractFileStrategy(abc.ABC):
+class AbstractFileAdapter(abc.ABC):
     def __init__(self, obj, file_ext, load_kwargs=None, save_kwargs=None):
         self._obj = obj
         self._root_dir = PATH_FILES_DIR+"/objs/"  # root_dir
@@ -58,7 +58,7 @@ class AbstractFileStrategy(abc.ABC):
         pass
 
 
-class JsonFile(AbstractFileStrategy):
+class JsonFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='json', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 
@@ -72,7 +72,7 @@ class JsonFile(AbstractFileStrategy):
             json.dump(data, f, indent=4)
 
 
-class HTMLFile(AbstractFileStrategy):
+class HTMLFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='html', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 
@@ -86,7 +86,7 @@ class HTMLFile(AbstractFileStrategy):
             f.write(data)
 
 
-class DataframeFile(AbstractFileStrategy):
+class DataframeFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='csv', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 

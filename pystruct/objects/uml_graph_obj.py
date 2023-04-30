@@ -12,7 +12,7 @@ from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder,
     PlantUMLPackagesAndModulesBuilder
 from pystruct.utils.color_utils import getDistinctColors
 from pystruct.utils.mixins import JSONableMixin
-from pystruct.utils.file_strategies import HTMLFile
+from pystruct.utils.file_adapters import HTMLFile
 from pystruct.utils.graph_structures import Graph
 from pystruct.utils.plantuml_utils import PlantUMLService
 
