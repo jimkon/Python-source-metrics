@@ -17,20 +17,29 @@ class Singleton(object):
         return cls.instance
 
 
-class AbstractObject(Singleton, abc.ABC, HTMLMixin, PrettifiedClassNameMixin):
+class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
     """
-    AbstractObject manages the lifecycle of objects and the data they contain. It is
-    responsible for building, caching and saving the data, as well as loading and returning
-    the data if it already exists. the main responsibility of this class is to provide an easy
-    extend interface and handle all the data management operations in an efficient and invisible
-    from the user way.
+    AbstractObject manages the lifecycle of objects and the data they contain. It
+    is responsible for building, caching, and saving the data, as well as loading
+    and returning the data if it already exists. The main responsibility of this class
+    is to provide an easy-to-extend interface and handle all data management operations
+    efficiently and invisibly from the user.
 
-    To use this class, you need to provide an implementation of `build` method that is
-    responsible for the creation of the data. If you provide a file adapter, AbstractObject
-    will use it to store after the creation, and to load it if there is such a file. To obtain
-    the data you only need to call the `data` method. It is encouraged to provide additional methods
-    of obtaining the data, for example  a `json()` method for a JSON object, to provide more specific information
-    about what the data is, and potentially any needed validation and logging.
+    To use this class, you need to provide an implementation of the build method responsible
+    for creating the data. If you provide a file adapter, AbstractObject will use it to store
+    data after creation and to load it if there is such a file. To obtain the data, you only
+    need to call the data method. It is encouraged to provide additional methods for obtaining
+    data, for example, a json() method for a JSON object to provide more specific information
+    about what the data is and potentially any needed validation and logging.
+
+    * abc.ABC: AbstractObject is an abstract class and cannot be used as it is. build method will
+      have to be implemented when extended.
+    * Singleton: Ensures that if two objects get instantiated at different times in the same
+      execution, the data will be cached the second time, saving an extra loading operation.
+    * HTMLMixin: Adds the to_html implementation to ensure that every implementation will have
+      an HTML representation.
+    * PrettifiedClassNameMixin: Provides class_name and prettified_class_name methods that
+      make it easier to access the class name and a prettified version of it.
     """
 
     def __init__(self, file_adapter=None):
