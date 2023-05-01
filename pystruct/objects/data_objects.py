@@ -4,31 +4,42 @@ import pandas as pd
 from json2html import json2html
 
 from pystruct.utils import logs
-from pystruct.utils.mixins import PrettifiedClassNameMixin
-from pystruct.utils.file_adapters import DataframeFile, HTMLFile, JsonFile
+from pystruct.utils.file_adapters import DataframeFile, HTMLFile, JsonFile, TextFile
+from pystruct.utils.mixins import PrettifiedClassNameMixin, HTMLMixin
 
 
-class SingletonClass(object):
+class Singleton(object):
     def __new__(cls, *args, **kwargs):
         if not hasattr(cls, 'instance'):
-            cls.instance = super(SingletonClass, cls).__new__(cls, *args, **kwargs)
-        # else:
-        #     logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
+            cls.instance = super(Singleton, cls).__new__(cls)
+        else:
+            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
         return cls.instance
 
 
-class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
+class AbstractObject(Singleton, abc.ABC, HTMLMixin, PrettifiedClassNameMixin):
+    """
+    AbstractObject manages the lifecycle of objects and the data they contain. It is
+    responsible for building, caching and saving the data, as well as loading and returning
+    the data if it already exists. the main responsibility of this class is to provide an easy
+    extend interface and handle all the data management operations in an efficient and invisible
+    from the user way.
+
+    To use this class, you need to provide an implementation of `build` method that is
+    responsible for the creation of the data. If you provide a file adapter, AbstractObject
+    will use it to store after the creation, and to load it if there is such a file. To obtain
+    the data you only need to call the `data` method. It is encouraged to provide additional methods
+    of obtaining the data, for example  a `json()` method for a JSON object, to provide more specific information
+    about what the data is, and potentially any needed validation and logging.
+    """
+
     def __init__(self, file_adapter=None):
         self._file_adapter = file_adapter
         self._data = None
 
     def data(self):
-        logs.log_obj_stage(f"{self.__class__.__name__} data.")
-        # try:
+        logs.log_obj_stage(f"{self.class_name()} data.")
         return self._prepare_data()
-        # except Exception as e:
-        #     log_red(str(e))
-        #     return f"{self.__class__.__name__}: {e}"
 
     def _prepare_data(self):
         if self._data is not None:  # if self._data breaks in Dataframes
@@ -38,9 +49,9 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
             self._data = self._file_adapter.load()
 
         if self._data is None:
-            logs.log_general(f"{self.__class__.__name__} object is building.")
+            logs.log_general(f"{self.class_name()} object is building.")
             self._data = self.build()
-            logs.log_general(f"{self.__class__.__name__} object finished.")
+            logs.log_general(f"{self.class_name()} object finished.")
 
             if self._file_adapter and self._data is not None:  # if self._data breaks in Dataframes
                 self._file_adapter.save(self._data)
@@ -48,6 +59,7 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
         return self._data
 
     def delete(self):
+        self._data = None
         if self._file_adapter:
             self._file_adapter.delete_file()
 
@@ -60,11 +72,14 @@ class AbstractObject(SingletonClass, abc.ABC, PrettifiedClassNameMixin):
 
 
 class TextObject(AbstractObject, abc.ABC):
+    def __init__(self, file_ext):
+        super().__init__(TextFile(file_ext=file_ext))
+
     @property
     def text(self):
         build_res = self.build()
         if not isinstance(build_res, str):
-            raise TypeError(f"Wrong return type: build method of HTMLObject objects must return string. got {type(build_res)}")
+            raise TypeError(f"Wrong return type: build method of TextObject objects must return string. got {type(build_res)}")
         return build_res
 
     def to_html(self):
@@ -119,20 +134,15 @@ class HTMLObject(AbstractObject, abc.ABC):
         return self.html
 
 
-# TODO Report objects
-# TODO plantUMLDOc objects
-# TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
-# TODO similar for umlgrapphs
-
-
 class HTMLTableObject(HTMLObject, abc.ABC):
     def __init__(self):
         super().__init__()
 
     def title(self):
-        def _space_before_upper_case(s):
-            return ''.join([(f" {c}" if c.isupper() else c) for c in s])
-        return _space_before_upper_case(self.__class__.__name__)
+        # def _space_before_upper_case(s):
+        #     return ''.join([(f" {c}" if c.isupper() else c) for c in s])
+        # return _space_before_upper_case(self.__class__.__name__)
+        return self.prettified_class_name()
 
     @abc.abstractmethod
     def build_dataframe(self):
@@ -149,3 +159,37 @@ class HTMLTableObject(HTMLObject, abc.ABC):
         title = self.title() if self.title() else ''
         table_html = build_res.to_html(index=False, justify='center')
         return f"<h3>{title}</h3>{table_html}<br>"
+
+
+# class MultiPlantUMLDocumentsObject(JSONObject, abc.ABC):
+    # def build
+    #
+    # @abc.abstractmethod
+    # def build_documents(self):
+    #     pass
+    #
+    # @property
+    # def documents(self):
+
+
+# class MultiTabHTMLObject(HTMLObject, abc.ABC):
+#     @abc.abstractmethod
+#     def build_tabs_dict(self):
+#         pass
+#
+#     def build(self):
+#         tabs_dict = self.build_tabs_dict()
+#         html_builder = TabsHTML()
+#         for title, obj_class in tabs_dict.items():
+#             html_builder.add_tab(title, obj_class().data())
+#         return html_builder.html()
+
+# TODO store files in groups based on abstract type (dfs, jsons, htmls)
+# TODO Report objects
+# TODO plantUMLDOc objects
+# TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
+# TODO similar for umlgrapphs
+# TODO organise objects methods so:
+#   * abstract objects define a build_[object] method calling build or build_[object] for super class
+#   * abstract objects define a valudate_[object] method
+#   * make sure subclasses use the child concrete classes' methods
