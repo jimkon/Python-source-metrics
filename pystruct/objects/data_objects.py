@@ -141,7 +141,7 @@ class JSONObjectABC(AbstractObject, abc.ABC):
         return build_res
 
     def to_html(self):
-        return f"to_html:{json2html.convert(json=self.json)}"
+        return f"to_html:{json2html.convert(json=self.json())}"
 
 
 class HTMLObjectABC(AbstractObject, abc.ABC):
