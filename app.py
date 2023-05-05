@@ -36,7 +36,8 @@ def build_obj(obj_class_name):
 
 @app.route('/download/<obj_class_name>')
 def download_obj(obj_class_name):
-    getattr(sys.modules[__name__], obj_class_name.split('.')[0])().data()  # pre load the obj
+    cls = get_object_class_from_class_name(obj_class_name.replace(' ', ''))
+    cls().data()
     filepath = os.path.join(app.root_path, 'report_files/objs/', obj_class_name)
     app.logger.info(f"{filepath}")
     return send_file(filepath, as_attachment=True)
