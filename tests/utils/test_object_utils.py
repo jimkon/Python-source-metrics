@@ -17,9 +17,9 @@ class TestObjectUtils(unittest.TestCase):
         self.assertTrue(len(concrete_objs) > 0)
         for obj_classes in concrete_objs:
             self.assertNotIsInstance(obj_classes, do.AbstractObject)
-            self.assertNotIsInstance(obj_classes, do.DataframeObject)
-            self.assertNotIsInstance(obj_classes, do.HTMLObject)
-            self.assertNotIsInstance(obj_classes, do.HTMLTableObject)
+            self.assertNotIsInstance(obj_classes, do.DataframeObjectABC)
+            self.assertNotIsInstance(obj_classes, do.HTMLObjectABC)
+            self.assertNotIsInstance(obj_classes, do.HTMLTableObjectABC)
 
 
 if __name__ == '__main__':

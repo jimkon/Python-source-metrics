@@ -7,7 +7,7 @@ from pystruct.utils.plots import plot_hist_and_quartiles
 plt.style.use('bmh')
 
 from pystruct.metrics.metrics_core import MetricObject
-from pystruct.objects.data_objects import DataframeObject, HTMLTableObject
+from pystruct.objects.data_objects import DataframeObjectABC, HTMLTableObjectABC
 from pystruct.objects.metric_stats import ValueCountMetricObj, MatplotlibGraphMetricObj
 
 
@@ -42,7 +42,7 @@ class NumberOfCodeLinesMetricObj(MetricObject):
         return self._calc(function_obj)
 
 
-class GeneralItemMetricObj(DataframeObject):
+class GeneralItemMetricObj(DataframeObjectABC):
     def build(self):
         df_lines = NumberOfCodeLinesMetricObj().data()
         df_types = TypeMetricObj().data()
@@ -72,7 +72,7 @@ class GeneralItemMetricObj(DataframeObject):
         return df_agg_stats
 
 
-class GeneralItemMetricHTMLTable(HTMLTableObject):
+class GeneralItemMetricHTMLTable(HTMLTableObjectABC):
     def build_dataframe(self):
         return GeneralItemMetricObj().data()
 

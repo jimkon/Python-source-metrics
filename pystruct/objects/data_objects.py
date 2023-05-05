@@ -9,12 +9,14 @@ from pystruct.utils.mixins import PrettifiedClassNameMixin, HTMLMixin
 
 
 class Singleton(object):
+    _instance = None
+
     def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(Singleton, cls).__new__(cls)
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__new__(cls)
         else:
             logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
-        return cls.instance
+        return cls._instance
 
 
 class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
@@ -28,10 +30,23 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
     To use this class, you need to provide an implementation of the build method responsible
     for creating the data. If you provide a file adapter, AbstractObject will use it to store
     data after creation and to load it if there is such a file. To obtain the data, you only
-    need to call the data method. It is encouraged to provide additional methods for obtaining
-    data, for example, a json() method for a JSON object to provide more specific information
-    about what the data is and potentially any needed validation and logging.
+    need to call the data method.
 
+    HOW TO EXTEND:
+    > If extended by another abstract class, for example another type of objects like JSON,
+    it is encouraged to provide additional methods for obtaining data, for example a json()
+    method for a JSON object to provide more specific information about what the data is and
+    potentially any needed validation and logging.
+
+    > If extended by another abstract class, for example another category of object like a
+    multi-tab html element, where build instructions are extended, it is recommended to add
+    an abstract `build_[object-category]` (for example `build_multitabs_page`) which will be
+    called by `build`.
+
+    If extended by a concrete class, for example an actual final object, just implement the
+    corresponding `build*` method, and use the corresponding `data` method for the output.
+
+    IMPLEMENTATIONS
     * abc.ABC: AbstractObject is an abstract class and cannot be used as it is. build method will
       have to be implemented when extended.
     * Singleton: Ensures that if two objects get instantiated at different times in the same
@@ -80,70 +95,70 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
         return f"to_html:{self.data()}"
 
 
-class TextObject(AbstractObject, abc.ABC):
+class TextObjectABC(AbstractObject, abc.ABC):
     def __init__(self, file_ext):
-        super().__init__(TextFile(file_ext=file_ext))
+        super().__init__(TextFile(self, file_ext=file_ext))
 
-    @property
     def text(self):
-        build_res = self.build()
-        if not isinstance(build_res, str):
-            raise TypeError(f"Wrong return type: build method of TextObject objects must return string. got {type(build_res)}")
-        return build_res
+        data = self.data()
+        if not isinstance(data, str):
+            raise TypeError(
+                f"Wrong return type: build method of TextObject objects must return string. got {type(build_res)}")
+        return data
 
     def to_html(self):
-        return f"<h2>Text:</h2>{self.text}"
+        return f"<h2>Text:</h2>{self.text()}"
 
 
-class DataframeObject(AbstractObject, abc.ABC):
+class DataframeObjectABC(AbstractObject, abc.ABC):
     def __init__(self, read_csv_kwargs=None, to_csv_kwargs=None):  # TODO default values for DF objects
+        read_csv_kwargs = {'index_col': None} if read_csv_kwargs is None else read_csv_kwargs
+        to_csv_kwargs = {'index': False} if to_csv_kwargs is None else to_csv_kwargs
         super().__init__(DataframeFile(self,
                                        save_kwargs=to_csv_kwargs,
                                        load_kwargs=read_csv_kwargs))
 
-    @property
     def dataframe(self):
-        build_res = self.build()
+        build_res = self.data()
         if not isinstance(build_res, pd.DataFrame) and not isinstance(build_res, pd.Series):
-            raise TypeError(f"Wrong return type: build method of DataframeObject objects must return pandas.DataFrame or pandas.Series. got {type(build_res)}")
+            raise TypeError(
+                f"Wrong return type: build method of DataframeObject objects must return pandas.DataFrame or pandas.Series. got {type(build_res)}")
         return build_res
 
     def to_html(self):
-        return f"to_html:{self.dataframe.to_html()}"
+        return f"to_html:{self.dataframe().to_html()}"
 
 
-class JSONObject(AbstractObject, abc.ABC):
+class JSONObjectABC(AbstractObject, abc.ABC):
     def __init__(self):
-        super().__init__(JsonFile)
+        super().__init__(JsonFile(self))
 
-    @property
     def json(self):
-        build_res = self.build()
+        build_res = self.data()
         if not isinstance(build_res, list) and not isinstance(build_res, dict):
             raise TypeError(
                 f"Wrong return type: build method of JSONObject objects must return a JSON object (list of dicts or dict). got {type(build_res)}")
         return build_res
 
     def to_html(self):
-        return f"to_html:{json2html.convert(json = self.json)}"
+        return f"to_html:{json2html.convert(json=self.json)}"
 
 
-class HTMLObject(AbstractObject, abc.ABC):
+class HTMLObjectABC(AbstractObject, abc.ABC):
     def __init__(self):
         super().__init__(HTMLFile(self))
 
-    @property
     def html(self):
-        build_res = self.build()
+        build_res = self.data()
         if not isinstance(build_res, str):
-            raise TypeError(f"Wrong return type: build method of HTMLObject objects must return string. got {type(build_res)}")
+            raise TypeError(
+                f"Wrong return type: build method of HTMLObject objects must return string. got {type(build_res)}")
         return build_res
 
     def to_html(self):
-        return self.html
+        return self.html()
 
-
-class HTMLTableObject(HTMLObject, abc.ABC):
+class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
     def __init__(self):
         super().__init__()
 
@@ -171,14 +186,14 @@ class HTMLTableObject(HTMLObject, abc.ABC):
 
 
 # class MultiPlantUMLDocumentsObject(JSONObject, abc.ABC):
-    # def build
-    #
-    # @abc.abstractmethod
-    # def build_documents(self):
-    #     pass
-    #
-    # @property
-    # def documents(self):
+# def build
+#
+# @abc.abstractmethod
+# def build_documents(self):
+#     pass
+#
+# @property
+# def documents(self):
 
 
 # class MultiTabHTMLObject(HTMLObject, abc.ABC):

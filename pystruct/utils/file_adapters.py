@@ -72,6 +72,20 @@ class JsonFile(AbstractFileAdapter):
             json.dump(data, f, indent=4)
 
 
+class TextFile(AbstractFileAdapter):
+    def __init__(self, obj, file_ext='txt', load_kwargs=None, save_kwargs=None):
+        super().__init__(obj, file_ext=file_ext, load_kwargs=load_kwargs, save_kwargs=save_kwargs)
+
+    def load_from_file(self, filepath, **kwargs):
+        with open(filepath, 'r') as f:
+            return f.read()
+
+    def save_to_file(self, data, filepath, **kwargs):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, 'w') as f:
+            f.write(data)
+
+
 class HTMLFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='html', load_kwargs=load_kwargs, save_kwargs=save_kwargs)

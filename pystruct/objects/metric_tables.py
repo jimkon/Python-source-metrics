@@ -7,13 +7,10 @@ plt.style.use('bmh')
 
 from pystruct.html_utils.html_pages import HTMLPage
 from pystruct.metrics.metric_sets import ALL_METRICS
-from pystruct.objects.data_objects import HTMLTableObject, DataframeObject, HTMLObject
+from pystruct.objects.data_objects import HTMLTableObjectABC, DataframeObjectABC, HTMLObjectABC
 
 
-class AllMetricsDataframe(DataframeObject):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
-
+class AllMetricsDataframe(DataframeObjectABC):
     def build(self):
         df = ALL_METRICS[0]().data()
 
@@ -23,12 +20,12 @@ class AllMetricsDataframe(DataframeObject):
         return df
 
 
-class AllMetricsTable(HTMLTableObject):
+class AllMetricsTable(HTMLTableObjectABC):
     def build_dataframe(self):
         return AllMetricsDataframe().data()
 
 
-class AllMetricsStatsHTML(HTMLObject):
+class AllMetricsStatsHTML(HTMLObjectABC):
     def build(self):
         page = HTMLPage()
         page.add_element(GeneralItemMetricHTMLTable().data())

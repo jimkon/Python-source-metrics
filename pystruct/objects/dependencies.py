@@ -1,11 +1,12 @@
 import pandas as pd
 
-from pystruct.objects.data_objects import DataframeObject
+from pystruct.objects.data_objects import DataframeObjectABC
 from pystruct.objects.imports_data_objects import ImportsEnrichedDataframe
 
 
 def _unique_sorted_string_agg(items):
-    return ','.join(list(sorted(set(items))))
+    filtered_items = [item for item in items if isinstance(item, str)]
+    return ','.join(sorted(set(filtered_items   )))
 
 
 def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):
@@ -16,9 +17,9 @@ def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_col
     return agg_rows
 
 
-class PackageAndModulesMapping(DataframeObject):
+class PackageAndModulesMapping(DataframeObjectABC):
     def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
+        super().__init__()
 
     def build(self):
         df = ImportsEnrichedDataframe().data()
@@ -30,7 +31,7 @@ class PackageAndModulesMapping(DataframeObject):
         return df_res
 
 
-class PackageDependencyStatsDataframe(DataframeObject):
+class PackageDependencyStatsDataframe(DataframeObjectABC):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
         df = ImportsEnrichedDataframe().data()
@@ -94,7 +95,7 @@ class PackageDependencyStatsDataframe(DataframeObject):
         return res
 
 
-class ModuleDependencyStatsDataframe(DataframeObject):
+class ModuleDependencyStatsDataframe(DataframeObjectABC):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
         df = ImportsEnrichedDataframe().data()

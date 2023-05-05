@@ -1,16 +1,16 @@
 from pystruct.html_utils.html_pages import TabsHTML
-from pystruct.objects.data_objects import HTMLObject
+from pystruct.objects.data_objects import HTMLObjectABC
 from pystruct.objects.imports_data_objects import ImportsStatsHTML
 from pystruct.objects.metric_tables import AllMetricsTable, AllMetricsStatsHTML
-from pystruct.objects.uml_graph_obj import UMLClassDiagramObj, UMLClassRelationDiagramObj, \
+from pystruct.objects.uml_graph_obj import UMLClassGraphHTMLObj, UMLClassRelationGraphHTMLObj, \
     DependencyReportObj
 
 
-class FullReport(HTMLObject):
+class FullReport(HTMLObjectABC):
     content_dict = {
         "General info": AllMetricsStatsHTML,
-        "UML Class diagram": UMLClassDiagramObj,
-        "UML Relation diagram": UMLClassRelationDiagramObj,
+        "UML Class diagram": UMLClassGraphHTMLObj,
+        "UML Relation diagram": UMLClassRelationGraphHTMLObj,
         "Imports table": ImportsStatsHTML,
         "Dependencies": DependencyReportObj,
         # "In project Import graphs": InProjectImportModuleGraphObj,

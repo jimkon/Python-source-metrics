@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from pystruct.html_utils.html_pages import ImageHTML
-from pystruct.objects.data_objects import HTMLTableObject, HTMLObject
+from pystruct.objects.data_objects import HTMLTableObjectABC, HTMLObjectABC
 
 
-class ValueCountMetricObj(HTMLTableObject, abc.ABC):
+class ValueCountMetricObj(HTMLTableObjectABC, abc.ABC):
     @abc.abstractmethod
     def get_series(self):
         pass
@@ -20,7 +20,7 @@ class ValueCountMetricObj(HTMLTableObject, abc.ABC):
         return res
 
 
-class MatplotlibGraphMetricObj(HTMLObject, abc.ABC):
+class MatplotlibGraphMetricObj(HTMLObjectABC, abc.ABC):
     @abc.abstractmethod
     def build_plot(self):
         pass
