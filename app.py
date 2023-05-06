@@ -15,7 +15,7 @@ app.config['SECRET_KEY'] = 'test_key'
 def main():
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
     debug_flag = app.debug
-    all_objects = sorted([_cls.prettified_class_name() for _cls in get_all_concrete_object_classes()])
+    all_objects = ([_cls.name() for _cls in get_all_concrete_object_classes()])
     return render_template('index.html', **locals())
 
 

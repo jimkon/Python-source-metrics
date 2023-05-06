@@ -12,8 +12,6 @@ from pystruct.objects.metric_stats import ValueCountMetricObj, MatplotlibGraphMe
 
 
 class TypeMetricObj(MetricObject):
-    name = 'type'
-
     def calculate(self, p_obj, **kwargs):
         return p_obj.type
 
@@ -24,8 +22,6 @@ class TypeMetricValueCountsTable(ValueCountMetricObj):
 
 
 class NumberOfCodeLinesMetricObj(MetricObject):
-    name = 'number_of_lines'
-
     def _calc(self, p_obj):
         return len(p_obj.code_lines)
 
@@ -96,8 +92,6 @@ class NumberOfCodeLinesHistogram(MatplotlibGraphMetricObj):
 
 
 class NumberOfArgsInFunctionsMetricObj(MetricObject):
-    name = 'number_of_args_in_functions'
-
     @staticmethod
     def _fetch_args(p_obj):
         args = [_ast.arg for _ast in p_obj.ast if isinstance(_ast, ast.arg)]
@@ -134,7 +128,7 @@ class FunctionArgsHistogram(MatplotlibGraphMetricObj):
 
 
 class IsScriptFile(MetricObject):
-    name = 'is_script_file'
+    metric_name = 'is_script_file'
 
     def calculate_module(self, module_obj, **kwargs):
         all_code = module_obj.code.replace('\n', '').replace(' ', '').replace('"', "'")

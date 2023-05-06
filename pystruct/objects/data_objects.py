@@ -5,7 +5,8 @@ from json2html import json2html
 
 from pystruct.utils import logs
 from pystruct.utils.file_adapters import DataframeFile, HTMLFile, JsonFile, TextFile
-from pystruct.utils.mixins import PrettifiedClassNameMixin, HTMLMixin
+from pystruct.utils.mixins import NameMixin, HTMLMixin
+from utils.string_utils import split_camel_case_string
 
 
 class Singleton(object):
@@ -19,7 +20,7 @@ class Singleton(object):
         return cls._instance
 
 
-class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
+class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
     """
     AbstractObject manages the lifecycle of objects and the data they contain. It
     is responsible for building, caching, and saving the data, as well as loading
@@ -93,6 +94,10 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, PrettifiedClassNameMixin):
 
     def to_html(self):
         return f"to_html:{self.data()}"
+
+    @classmethod
+    def name(cls):
+        return split_camel_case_string(cls.__name__)
 
 
 class TextObjectABC(AbstractObject, abc.ABC):

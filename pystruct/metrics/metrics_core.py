@@ -49,12 +49,10 @@ class CalculateMetricVisitor(TreeNodeVisitor):
 
     def results(self):
         data_array = list(self._results.items())
-        return pd.DataFrame.from_records(data_array, columns=['item', self._metric.name])
+        return pd.DataFrame.from_records(data_array, columns=['item', self._metric.name()])
 
 
 class Metric(abc.ABC):
-    name = 'no-name'
-
     def calculate(self, p_obj, **kwargs):
         pass
 
