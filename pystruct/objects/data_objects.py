@@ -6,18 +6,8 @@ from json2html import json2html
 from pystruct.utils import logs
 from pystruct.utils.file_adapters import DataframeFile, HTMLFile, JsonFile, TextFile
 from pystruct.utils.mixins import NameMixin, HTMLMixin
-from utils.string_utils import split_camel_case_string
-
-
-class Singleton(object):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super(Singleton, cls).__new__(cls)
-        else:
-            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
-        return cls._instance
+from pystruct.utils.string_utils import split_camel_case_string
+from pystruct.utils.python_utils import Singleton
 
 
 class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
@@ -63,7 +53,7 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
         self._data = None
 
     def data(self):
-        logs.log_obj_stage(f"{self.class_name()} data.")
+        logs.log_obj_stage(f"{self.name()} data.")
         return self._prepare_data()
 
     def _prepare_data(self):
@@ -74,9 +64,9 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
             self._data = self._file_adapter.load()
 
         if self._data is None:
-            logs.log_general(f"{self.class_name()} object is building.")
+            logs.log_general(f"{self.name()} object is building.")
             self._data = self.build()
-            logs.log_general(f"{self.class_name()} object finished.")
+            logs.log_general(f"{self.name()} object finished.")
 
             if self._file_adapter and self._data is not None:  # if self._data breaks in Dataframes
                 self._file_adapter.save(self._data)

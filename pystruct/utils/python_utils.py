@@ -5,6 +5,8 @@ import pkgutil
 from functools import lru_cache
 import logging
 
+from utils import logs
+
 
 @lru_cache
 def all_python_builtin_packages():
@@ -42,3 +44,14 @@ def fetch_python_builtin_packages_from_python_docs():
 def subclasses_of_class(cls):
     return set(cls.__subclasses__()).union(
         [s for c in cls.__subclasses__() for s in subclasses_of_class(c)])
+
+
+class Singleton(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__new__(cls)
+        else:
+            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
+        return cls._instance
