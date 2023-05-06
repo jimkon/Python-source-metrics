@@ -5,7 +5,7 @@ import pkgutil
 from functools import lru_cache
 import logging
 
-from utils import logs
+from pystruct.utils import logs
 
 
 @lru_cache
@@ -53,5 +53,18 @@ class Singleton(object):
         if cls._instance is None:
             cls._instance = super(Singleton, cls).__new__(cls)
         else:
-            logs.log_general(f"SingletonClass: Object {cls.__name__} is already initialized.")
+            logs.log_general(f"Singleton: Object {cls.__name__} is already initialized.")
         return cls._instance
+
+
+class MultiSingleton(object):
+    _instance = {}
+
+    def __new__(cls, key, *args, **kwargs):
+        if key not in cls._instance.keys():
+            cls._instance[key] = super(MultiSingleton, cls).__new__(cls)
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key}'] got initialized.")
+
+        else:
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key}'] is already initialized.")
+        return cls._instance[key]
