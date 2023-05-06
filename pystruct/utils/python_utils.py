@@ -1,4 +1,5 @@
 import re
+import typing
 from urllib.error import URLError
 from urllib.request import urlopen
 import pkgutil
@@ -61,10 +62,15 @@ class MultiSingleton(object):
     _instance = {}
 
     def __new__(cls, key, *args, **kwargs):
-        if key not in cls._instance.keys():
-            cls._instance[key] = super(MultiSingleton, cls).__new__(cls)
-            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key}'] got initialized.")
+        key_str = str(key)
+
+        # if isinstance(key_str, typing.Hashable):
+        #     raise ValueError(f"MultiSingleton: First init argument of {cls.__name__} object must be hashable.")
+
+        if key_str not in cls._instance.keys():
+            cls._instance[key_str] = super(MultiSingleton, cls).__new__(cls)
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key_str}'] got initialized.")
 
         else:
-            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key}'] is already initialized.")
-        return cls._instance[key]
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key_str}'] is already initialized.")
+        return cls._instance[key_str]
