@@ -2,6 +2,7 @@
 
 {% block content %}
 <h1>Debug page</h1>
+<a href={{url_for('test_all_objects')}}>Test all objects (will attempt to build everything)</a><br>
 
 <h2>Existing objects</h2>
 {% for _cls in existing_objs %}
