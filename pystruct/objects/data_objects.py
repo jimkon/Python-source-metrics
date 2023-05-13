@@ -37,6 +37,8 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
     If extended by a concrete class, for example an actual final object, just implement the
     corresponding `build*` method, and use the corresponding `data` method for the output.
 
+    `build` calls `build_[type]`, 'data' calls `[data_type]`
+
     IMPLEMENTATIONS
     * abc.ABC: AbstractObject is an abstract class and cannot be used as it is. build method will
       have to be implemented when extended.
@@ -98,7 +100,7 @@ class TextObjectABC(AbstractObject, abc.ABC):
         data = self.data()
         if not isinstance(data, str):
             raise TypeError(
-                f"Wrong return type: build method of TextObject objects must return string. got {type(build_res)}")
+                f"Wrong return type: build method of TextObject objects must return string. got {type(data)}")
         return data
 
     def to_html(self):
