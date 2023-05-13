@@ -161,7 +161,7 @@ class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
         super().__init__()
 
     def title(self):
-        return self.name
+        return self.name()
 
     @abc.abstractmethod
     def build_dataframe(self):
