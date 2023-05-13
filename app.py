@@ -14,6 +14,7 @@ print(f"{debug_flag=}")
 
 dataset_controller = DatasetController()
 
+
 @app.route('/')
 def main():
     if dataset_controller.current_dataset is None:
@@ -62,14 +63,12 @@ def new_project():
     source = None
     if request.method == 'POST':
         try:
-            dc = DatasetController()
-
             if "filepath_input" in request.form:
                 source = request.form['filepath_input']
-                dc.new(dir_path=source)
+                dataset_controller.new(dir_path=source)
             elif "giturl_input" in request.form:
                 source = request.form['giturl_input']
-                dc.new(git_url=source)
+                dataset_controller.new(git_url=source)
 
             return redirect(url_for('main'))
         except Exception as e:
