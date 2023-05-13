@@ -4,17 +4,15 @@ import os
 
 import pandas as pd
 
-from pystruct.configs import PATH_FILES_DIR
-from pystruct.utils import logs
 from pystruct.plat.dataset_controller import DatasetController
+from pystruct.utils import logs
 
 
 class AbstractFileAdapter(abc.ABC):
     def __init__(self, obj, file_ext, load_kwargs=None, save_kwargs=None):
         self._obj = obj
-        self._root_dir = DatasetController().current_dataset.objects_directory
-        # self._root_dir = PATH_FILES_DIR+"/objs/"  # root_dir
         self._file_ext = file_ext
+        self._root_dir = DatasetController().current_dataset.objects_directory / self._file_ext
         self._cached_data = None
         self._load_kwargs, self._save_kwargs = load_kwargs, save_kwargs
 
