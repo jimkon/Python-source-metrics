@@ -178,6 +178,29 @@ class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
         return f"<h3>{title}</h3>{table_html}<br>"
 
 
+class PlantUMLDocumentObjABC(JSONObjectABC, abc.ABC):
+    @staticmethod
+    def _validate_doc(doc):
+        if not isinstance(doc, str):
+            raise TypeError(f"PlantUML documents must be of type 'str'. got {type(doc)}")
+        if not doc.startswith('@startuml'):
+            raise TypeError(f"PlantUML documents must start with ''. got {doc[:min(len(doc), 9)]}")
+        if not doc.strip().endswith('@enduml'):
+            raise TypeError(f"PlantUML documents must end with ''. got {doc[-min(len(doc), 7):]}")
+
+    def documents(self):
+        docs = self.json()
+
+        if isinstance(docs, str):
+            docs = [docs]
+
+        doc_values = docs.items() if isinstance(docs, dict) else docs
+        for doc in doc_values:
+            self._validate_doc(doc)
+
+        return docs
+
+
 # TODO Report objects
 # TODO plantUMLDOc objects
 # TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
@@ -186,3 +209,4 @@ class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
 #   * abstract objects define a build_[object] method calling build or build_[object] for super class
 #   * abstract objects define a valudate_[object] method
 #   * make sure subclasses use the child concrete classes' methods
+

@@ -3,9 +3,10 @@ import abc
 import markdown
 import pandas as pd
 
+from pystruct.objects.data_objects import PlantUMLDocumentObjABC
 from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
 from pystruct.metrics.import_metrics import breakdown_import_path
-from pystruct.objects.data_objects import AbstractObject, HTMLObjectABC, DataframeObjectABC, JSONObjectABC
+from pystruct.objects.data_objects import AbstractObject, HTMLObjectABC, DataframeObjectABC
 from pystruct.objects.dependencies import PackageDependencyStatsDataframe, ModuleDependencyStatsDataframe, \
     PackageAndModulesMapping
 from pystruct.objects.imports_data_objects import PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
@@ -43,29 +44,6 @@ class PackageColorMappingDataframe(DataframeObjectABC, JSONableMixin):
 
     def to_json(self):
         return self.data().set_index('package').to_dict(orient='index')
-
-
-class PlantUMLDocumentObj(JSONObjectABC, abc.ABC):
-    @staticmethod
-    def _validate_doc(doc):
-        if not isinstance(doc, str):
-            raise TypeError(f"PlantUML documents must be of type 'str'. got {type(doc)}")
-        if not doc.startswith('@startuml'):
-            raise TypeError(f"PlantUML documents must start with ''. got {doc[:min(len(doc), 9)]}")
-        if not doc.strip().endswith('@enduml'):
-            raise TypeError(f"PlantUML documents must end with ''. got {doc[-min(len(doc), 7):]}")
-
-    def documents(self):
-        docs = self.json()
-
-        if isinstance(docs, str):
-            docs = [docs]
-
-        doc_values = docs.items() if isinstance(docs, dict) else docs
-        for doc in doc_values:
-            self._validate_doc(doc)
-
-        return docs
 
 
 class PlantUMLGraphSingleHTMLPageObj(AbstractObject, abc.ABC):
@@ -119,7 +97,7 @@ class PlantUMLGraphMultiTabHTMLPageObj(AbstractObject, abc.ABC):
         pass
 
 
-class UMLClassDocumentObj(PlantUMLDocumentObj):
+class UMLClassDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         pobj = PObject().python_source_object()
 
@@ -136,7 +114,7 @@ class UMLClassGraphHTMLObj(PlantUMLGraphMultiTabHTMLPageObj):
         return UMLClassDocumentObj().documents()
 
 
-class UMLClassRelationDocumentObj(PlantUMLDocumentObj):
+class UMLClassRelationDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         pobj = PObject().python_source_object()
 
@@ -171,7 +149,7 @@ class UMLClassRelationGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
         return UMLClassRelationDocumentObj().documents()
 
 
-class PackageRelationsDocumentObj(PlantUMLDocumentObj):
+class PackageRelationsDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         df_pkgs = self.produce_data()
 
@@ -261,7 +239,7 @@ class PackageRelationsGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
         return PackageRelationsDocumentObj().documents()
 
 
-class PackageAndModuleRelationsDocumentObj(PlantUMLDocumentObj):
+class PackageAndModuleRelationsDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         df_pkgs, df_rels = self.produce_data()
 
@@ -304,7 +282,7 @@ class PackageAndModuleRelationsGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
         return PackageAndModuleRelationsDocumentObj().documents()
 
 
-class ModuleRelationDocuemntObj(PlantUMLDocumentObj):
+class ModuleRelationDocuemntObj(PlantUMLDocumentObjABC):
     def build(self):
         df = ImportsEnrichedDataframe().data()
         self._df = df[df['is_internal']]
@@ -340,7 +318,7 @@ class ModuleRelationGraphObj(PlantUMLGraphSingleHTMLPageObj):
         return ModuleRelationDocuemntObj().documents()
 
 
-class PackagesImportModuleDocumentObj(PlantUMLDocumentObj):
+class PackagesImportModuleDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         df = PackagesImportModuleGraphDataframe().data()
 
