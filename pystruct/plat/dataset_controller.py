@@ -29,6 +29,8 @@ class DatasetController(Singleton):
 
     @property
     def current_dataset(self):
+        if self._current_dataset is not None and not self._current_dataset.exists():
+            self._reset_current_dataset()
         return self._current_dataset
 
     def new(self, dir_path=None, git_url=None):

@@ -20,6 +20,9 @@ class Directory:
     def __repr__(self):
         return f"{self.__class__.__name__} path: {self._path}"
 
+    def exists(self):
+        return self.path.exists()
+
 
 class Dataset(Directory, MultiSingleton):
     def __init__(self, dataset_path):
