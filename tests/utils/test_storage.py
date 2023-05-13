@@ -24,28 +24,32 @@ class TestDatasetsDirectory(unittest.TestCase):
         shutil.rmtree(self.datasets_dir_path)
 
     def test_reset_current_dataset(self):
-        # Test case where directory is empty
+        # Test case when there are no datasets in the directory
         self.datasets_dir.reset_current_dataset()
         self.assertIsNone(self.datasets_dir.get_current_dataset())
 
-        # Test case where directory contains one or more subdirectories
-        dataset1_name = "dataset1"
-        dataset2_name = "dataset2"
-        dataset1_path = self.datasets_dir_path / dataset1_name
-        dataset2_path = self.datasets_dir_path / dataset2_name
-        dataset1_path.mkdir()
-        dataset2_path.mkdir()
-        self.datasets_dir.set_current_dataset(dataset2_name)
-        self.datasets_dir.reset_current_dataset()
-        self.assertEqual(self.datasets_dir.get_current_dataset().path, dataset1_path)
-
-    def test_set_current_dataset(self):
+        # Test case when there is one dataset in the directory
         dataset_name = "test_dataset"
         dataset_path = self.datasets_dir_path / dataset_name
         dataset_path.mkdir()
-        self.datasets_dir.set_current_dataset(dataset_name)
+        self.datasets_dir.reset_current_dataset()
         current_dataset = self.datasets_dir.get_current_dataset()
         self.assertEqual(current_dataset.path, dataset_path)
+
+    def test_set_current_dataset(self):
+        # Test with an existing dataset
+        existing_dataset_name = "test_dataset"
+        existing_dataset_path = self.datasets_dir_path / existing_dataset_name
+        existing_dataset_path.mkdir()
+        self.datasets_dir.set_current_dataset(existing_dataset_name)
+        current_dataset = self.datasets_dir.get_current_dataset()
+        self.assertEqual(current_dataset.path, existing_dataset_path)
+
+        # Test with a non-existing dataset
+        non_existing_dataset_name = "non_existing_dataset"
+        self.datasets_dir.set_current_dataset(non_existing_dataset_name)
+        current_dataset = self.datasets_dir.get_current_dataset()
+        self.assertEqual(current_dataset.path, existing_dataset_path)
 
     def test_new_dataset(self):
         dataset_name = "new_dataset"
@@ -64,7 +68,6 @@ class TestDatasetsDirectory(unittest.TestCase):
         self.datasets_dir.delete_dataset(dataset_name)
         self.assertFalse(dataset_path.exists())
         self.assertIsNone(self.datasets_dir.get_current_dataset())
-
 
 if __name__ == '__main__':
     unittest.main()

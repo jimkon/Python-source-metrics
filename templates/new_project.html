@@ -6,7 +6,7 @@
     <form method="POST">
         <h2>Browse local files:</h2>
             <label for="filepath_input">File path</label>
-            <input type="text" id="filepath_input" name="filepath_input" size="50">
+            <input type="text" id="filepath_input" name="filepath_input" size="50"><br>
             <input type="submit" id="filepath_load_button" value="Load path"><br>
             <input type="file" id="filepath_browse_button" disabled webkitdirectory directory multiple/>
     </form>
@@ -15,7 +15,9 @@
     <form method="POST">
         <h2>Github project:</h2>
             <label for="giturl_input">Git URL</label>
-            <input type="url" id="giturl_input" name="giturl_input" placeholder="https://github.com/jimkon/Python-source-metrics.git" size="50">
+            <input type="url" id="giturl_input" name="giturl_input" placeholder="https://github.com/jimkon/Python-source-metrics.git" size="50"><br>
+<!--            <label for="code_dir_input">Python source directory</label>-->
+<!--            <input type=text id="code_dir_input" name="giturl_input" placeholder="src" size="10"><br>-->
             <input type="submit" id="giturl_load_button" value="Download repo"><br>
     </form>
 

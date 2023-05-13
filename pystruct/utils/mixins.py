@@ -1,7 +1,5 @@
 import abc
 
-from utils.string_utils import split_camel_case_string
-
 
 class JSONableMixin(abc.ABC):
     @abc.abstractmethod
