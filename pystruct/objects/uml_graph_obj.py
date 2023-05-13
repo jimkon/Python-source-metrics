@@ -61,7 +61,7 @@ class PlantUMLDocumentObj(JSONObjectABC, abc.ABC):
         if isinstance(docs, str):
             docs = [docs]
         if isinstance(docs, list):
-            docs = {f'{self.prettified_class_name()}_{i}': doc for i, doc in enumerate(docs)}
+            docs = {f'{self.name}_{i}': doc for i, doc in enumerate(docs)}
 
         for name, doc in docs.items():
             self._validate_doc(doc)
