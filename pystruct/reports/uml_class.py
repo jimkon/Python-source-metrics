@@ -95,7 +95,7 @@ class PlantUMLDocument:
     def _start_uml(self):
         self._add_line('@startuml')
         self._add_line('left to right direction')
-        # self._add_line('set separator .')
+        self._add_line('set separator none')
         # self._add_line('scale max 1024 width')
 
     def _end_uml(self):
