@@ -153,14 +153,12 @@ class HTMLObjectABC(AbstractObject, abc.ABC):
     def to_html(self):
         return self.html()
 
+
 class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
     def __init__(self):
         super().__init__()
 
     def title(self):
-        # def _space_before_upper_case(s):
-        #     return ''.join([(f" {c}" if c.isupper() else c) for c in s])
-        # return _space_before_upper_case(self.__class__.__name__)
         return self.name
 
     @abc.abstractmethod
@@ -173,37 +171,11 @@ class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
             raise TypeError(
                 f"Wrong return type: build_dataframe method of HTMLTableObject objects must return pandas.DataFrame. got {type(build_res)}")
 
-        # html_table_str = SimpleHTMLTable(build_res).html
-        # return html_table_str
         title = self.title() if self.title() else ''
         table_html = build_res.to_html(index=False, justify='center')
         return f"<h3>{title}</h3>{table_html}<br>"
 
 
-# class MultiPlantUMLDocumentsObject(JSONObject, abc.ABC):
-# def build
-#
-# @abc.abstractmethod
-# def build_documents(self):
-#     pass
-#
-# @property
-# def documents(self):
-
-
-# class MultiTabHTMLObject(HTMLObject, abc.ABC):
-#     @abc.abstractmethod
-#     def build_tabs_dict(self):
-#         pass
-#
-#     def build(self):
-#         tabs_dict = self.build_tabs_dict()
-#         html_builder = TabsHTML()
-#         for title, obj_class in tabs_dict.items():
-#             html_builder.add_tab(title, obj_class().data())
-#         return html_builder.html()
-
-# TODO store files in groups based on abstract type (dfs, jsons, htmls)
 # TODO Report objects
 # TODO plantUMLDOc objects
 # TODO HTMLTableObject objects can be DataframeObjects (to_html will do the job)
