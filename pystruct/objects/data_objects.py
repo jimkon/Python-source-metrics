@@ -161,7 +161,7 @@ class HTMLTableObjectABC(HTMLObjectABC, abc.ABC):
         # def _space_before_upper_case(s):
         #     return ''.join([(f" {c}" if c.isupper() else c) for c in s])
         # return _space_before_upper_case(self.__class__.__name__)
-        return self.prettified_class_name()
+        return self.name
 
     @abc.abstractmethod
     def build_dataframe(self):
