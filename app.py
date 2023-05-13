@@ -25,8 +25,8 @@ def main():
 
 @app.route('/debug')
 def debug():
-    existing_objs = [obj.stem for obj in dataset_controller.current_dataset.objects_directory.rglob('*')]
-    all_objects = ([_cls.name() for _cls in get_all_concrete_object_classes()])
+    existing_objs = sorted([obj.stem for obj in dataset_controller.current_dataset.objects_directory.rglob('*')])
+    all_objects = sorted([_cls.name() for _cls in get_all_concrete_object_classes()])
     return render_template('debug.html', **locals(), **globals())
 
 
