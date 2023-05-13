@@ -9,6 +9,9 @@ from pystruct.utils.object_utils import get_object_class_from_class_name
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test_key'
+debug_flag = True
+print(f"{debug_flag=}")
+
 dataset_controller = DatasetController()
 
 @app.route('/')
@@ -17,16 +20,22 @@ def main():
         return redirect(url_for('new_project'))
 
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
-    debug_flag = app.debug
+    return render_template('index.html', **locals(), **globals())
+
+
+@app.route('/debug')
+def debug():
+    existing_objs = [obj.stem for obj in dataset_controller.current_dataset.objects_directory.rglob('*')]
     all_objects = ([_cls.name() for _cls in get_all_concrete_object_classes()])
-    return render_template('index.html', **locals())
+    return render_template('debug.html', **locals(), **globals())
+
 
 
 @app.route('/obj/<obj_class_name>')
 def obj(obj_class_name):
     cls = get_object_class_from_class_name(obj_class_name.replace(' ', ''))
     html_object = cls().to_html()
-    return render_template('objects.html', **locals())
+    return render_template('objects.html', **locals(), **globals())
 
 
 @app.route('/build_obj/<obj_class_name>')
@@ -34,7 +43,7 @@ def build_obj(obj_class_name):
     cls = get_object_class_from_class_name(obj_class_name.replace(' ', ''))
     cls().delete()
     html_object = cls().to_html()
-    return render_template('objects.html', **locals())
+    return render_template('objects.html', **locals(), **globals())
 
 
 @app.route('/download/<obj_class_name>')
@@ -67,7 +76,7 @@ def new_project():
             app.logger.warning(e)
             error_message = str(e)
 
-    return render_template('new_project.html', **locals())
+    return render_template('new_project.html', **locals(), **globals())
 
 
 if __name__ == "__main__":

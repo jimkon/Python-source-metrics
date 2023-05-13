@@ -7,6 +7,10 @@
 </head>
 <body>
 <a href={{ url_for('main') }}>Home</a>
+{% if debug_flag %}
+    <a href={{ url_for('debug') }}>Debug</a>
+{% endif %}
+
 {% block content %}
     <h1>Welcome to Python source metric!</h1>
 {% endblock content %}

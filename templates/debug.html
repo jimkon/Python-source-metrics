@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Debug page</h1>
+
+<h2>Existing objects</h2>
+{% for _cls in existing_objs %}
+    <a href={{url_for('obj', obj_class_name=_cls)}}>{{_cls}}</a><br>
+{% endfor %}
+
+<h2>All objects</h2>
+{% for _cls in all_objects %}
+    <a href={{url_for('build_obj', obj_class_name=_cls)}}>{{_cls}}</a><br>
+{% endfor %}
+
+{% endblock content %}
