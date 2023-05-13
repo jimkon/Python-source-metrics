@@ -34,7 +34,7 @@ class Dataset(Directory, MultiSingleton):
         self._code_dir = None
         self._init_code_dir()
 
-        self._objs_dir = pathlib.Path(self.path, 'objs')# FileDirectory(pathlib.Path(self.path, 'objs'))   # package(dataset dir) / objs
+        self._objs_dir = pathlib.Path(self.path, 'objs')
 
     def _init_code_dir(self):
         self._project_dir = pathlib.Path(self.path, 'project')
@@ -119,7 +119,7 @@ class Dataset(Directory, MultiSingleton):
                 raise FileNotFoundError(f"Dataset: No python files found in {dir_path}")
 
 
-class FileDirectory(Directory):
+class FileDirectory(Directory):  # TODO redundant. maybe delete
     def __init__(self, obj_dir):
         super().__init__(obj_dir)
         self.path.mkdir(exist_ok=True)
