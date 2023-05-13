@@ -51,7 +51,7 @@ def build_obj(obj_class_name):
 def download_obj(obj_class_name):
     cls = get_object_class_from_class_name(obj_class_name.replace(' ', ''))
     cls().data()
-    filepath = os.path.join(app.root_path, 'report_files/objs/', obj_class_name)
+    filepath = dataset_controller.current_dataset.objects_directory / "html" / f"{obj_class_name}.html"
     app.logger.info(f"{filepath}")
     return send_file(filepath, as_attachment=True)
 
