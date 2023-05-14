@@ -288,7 +288,8 @@ class ModuleRelationDocuemntObj(PlantUMLDocumentObjABC):
         self._df = df[df['is_internal']]
         modules, import_modules = self._df['module'].tolist(), self._df['import_module'].tolist()
         subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
-        docs = [self.produce_doc_for_modules(subgraph.nodes) for subgraph in subgraphs]
+        docs = {f"Grpah {i+1} (size={subgraph.size()})": self.produce_doc_for_modules(subgraph.nodes)
+                for i, subgraph in enumerate(subgraphs)}
         return docs
 
     def produce_doc_for_modules(self, modules):
@@ -313,7 +314,7 @@ class ModuleRelationDocuemntObj(PlantUMLDocumentObjABC):
         return plantuml_doc_string
 
 
-class ModuleRelationGraphObj(PlantUMLGraphSingleHTMLPageObj):
+class ModuleRelationGraphObj(PlantUMLGraphMultiTabHTMLPageObj):
     def build_plantuml_docs(self):
         return ModuleRelationDocuemntObj().documents()
 
