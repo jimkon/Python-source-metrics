@@ -161,7 +161,7 @@ class PlantUMLDocument:
 
 
 class PlantUMLPackagesAndModulesBuilder:
-    def __init__(self, direction='left to right direction', separator='set separator .'):
+    def __init__(self, direction='left to right direction', separator='set separator none'):
         self._res_string = ""
         self._direction = direction
         self._separator = separator
