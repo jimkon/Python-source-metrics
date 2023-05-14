@@ -323,16 +323,16 @@ class PackagesImportModuleDocumentObj(PlantUMLDocumentObjABC):
     def build(self):
         df = PackagesImportModuleGraphDataframe().data()
 
-        plantuml_doc_strings = []
+        plantuml_doc_strings = {}
         for package in df['import_root'].unique():
             sub_df = df[df['import_root'] == package]
             module, import_root = sub_df['module'].tolist(), sub_df['import_root'].tolist()
             doc = ObjectRelationGraphBuilder(module, import_root).result()
-            plantuml_doc_strings.append(doc)
+            plantuml_doc_strings[package] = doc
         return plantuml_doc_strings
 
 
-class PackagesImportModuleGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
+class PackagesImportModuleGraphHTMLObj(PlantUMLGraphMultiTabHTMLPageObj):
     def build_plantuml_docs(self):
         return PackagesImportModuleDocumentObj().documents()
 
@@ -361,7 +361,7 @@ class DependencyReportObj(HTMLObjectABC):
         "Package Relations": PackageRelationsGraphHTMLObj,
         "Package-Module Relations": PackageAndModuleRelationsGraphHTMLObj,
         "Module relations": ModuleRelationGraphObj,
-        "Commercial packages": PackagesImportModuleGraphHTMLObj,
+        "External package dependencies": PackagesImportModuleGraphHTMLObj,
     }
 
     def build(self):
