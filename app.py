@@ -17,7 +17,7 @@ dataset_controller = DatasetController()
 @app.route('/')
 def main():
     if dataset_controller.current_dataset is None:
-        return redirect(url_for('new_project'))
+        return redirect(url_for('project'))
 
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
     return render_template('index.html', **locals(), **globals())
@@ -47,26 +47,28 @@ def download_obj(obj_class_name):
     return send_file(filepath, as_attachment=True)
 
 
-@app.route('/project/new/', methods=['GET', 'POST'])
-def new_project():
-    app.logger.info(f"NEW_PROJECT> {request.method}")
-    error_message = ''
-    source = None
-    if request.method == 'POST':
-        try:
-            if "filepath_input" in request.form:
-                source = request.form['filepath_input']
-                dataset_controller.new(dir_path=source)
-            elif "giturl_input" in request.form:
-                source = request.form['giturl_input']
-                dataset_controller.new(git_url=source)
+@app.route('/project/', methods=['GET'])
+def project():
+    return render_template('project_menu.html', **locals(), **globals())
 
-            return redirect(url_for('main'))
-        except Exception as e:
-            app.logger.warning(e)
-            error_message = str(e)
 
-    return render_template('new_project.html', **locals(), **globals())
+@app.route('/project/new/source/', methods=['POST'])
+def new_source_project():
+    source = request.form['filepath_input']
+    dataset_controller.new(dir_path=source)
+    return redirect(url_for('main'))
+
+
+@app.route('/project/new/git/', methods=['POST'])
+def new_git_project():
+    git_url = request.form['git_url']
+    source_directory = request.form['source_directory']
+    branch = request.form.get('branch', 'master')
+    dataset_controller.new(git_url=git_url,
+                           code_dir=source_directory,
+                           branch=branch
+                           )
+    return redirect(url_for('main'))
 
 
 @app.route('/debug')
@@ -84,6 +86,7 @@ def test_all_objects():
     for obj_class in all_objects:
         try:
             _cls = get_object_class_from_class_name(obj_class.name().replace(' ', ''))
+            _cls().delete()
             result = _cls().build()
         except Exception as e:
             build_result = f"{e.__class__.__name__}: {str(e)}"
@@ -104,3 +107,7 @@ def test_all_objects():
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
 
+# TODO UMLClassRelationGraphHTMLObj fix and make it multitab
+# TODO add open dataset functionality
+# TODO add delete dataset functionality
+# TODO add new git dataset functionality

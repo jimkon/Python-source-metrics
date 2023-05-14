@@ -90,7 +90,7 @@ class Dataset(Directory, MultiSingleton):
         to_filepath.write_text(from_filepath.read_text())
         log_disk_ops(f"Dataset: Copied from {str(from_filepath)} to {str(to_filepath)}")
 
-    def add_python_files_from_git(self, git_url, code_dir=None):
+    def add_python_files_from_git(self, git_url, code_dir=None, branch='master'):
         download_dir = self._project_dir / 'git'
         if download_dir.exists():
             shutil.rmtree(download_dir)
@@ -99,7 +99,7 @@ class Dataset(Directory, MultiSingleton):
             code_dir = self._find_code_dir(git_url)
 
         log_disk_ops(f"Dataset: Accessing git repository {str(download_dir)}...")
-        Repo.clone_from(git_url, download_dir)
+        Repo.clone_from(git_url, download_dir, branch=branch)
         log_disk_ops(f"Dataset: Downloaded git repository {str(download_dir)}.")
         self.add_python_files_from_path(download_dir / code_dir)
 

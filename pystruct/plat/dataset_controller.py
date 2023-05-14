@@ -33,7 +33,7 @@ class DatasetController(Singleton):
             self._reset_current_dataset()
         return self._current_dataset
 
-    def new(self, dir_path=None, git_url=None):
+    def new(self, dir_path=None, git_url=None, code_dir=None, branch='master'):
         if dir_path is not None:
             dataset_name = pathlib.Path(dir_path).name
             dataset = self._datasets.new_dataset(dataset_name)
@@ -42,14 +42,11 @@ class DatasetController(Singleton):
             log_disk_ops(f"DatasetController: New dataset {self._current_dataset} from path.")
             return dataset
         elif git_url is not None:
-            # TODO
-            # source = request.form['giturl_input']
-            # code_dir = source.split(':')[-1]
-            # source = source.replace('/'+code_dir, '')
-            # dataset_name = source.split('/')[-1].split('.')[0]
-            # dataset = datasets.new_dataset(dataset_name)
-            # dataset.add_python_files_from_git(source, code_dir=code_dir)
-            raise NotImplementedError
+            dataset_name = git_url.split('/')[-1].split('.')[0]
+            dataset = self._datasets.new_dataset(dataset_name)
+            dataset.add_python_files_from_git(git_url, code_dir=code_dir, branch=branch)
+            self._current_dataset = dataset
+            log_disk_ops(f"DatasetController: New dataset {self._current_dataset} from Git repo.")
         else:
             raise ValueError("At least one of dir_path or git_url parameters has to be populated.")
 
