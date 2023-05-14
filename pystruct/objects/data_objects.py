@@ -194,7 +194,7 @@ class PlantUMLDocumentObjABC(JSONObjectABC, abc.ABC):
         if isinstance(docs, str):
             docs = [docs]
 
-        doc_values = docs.items() if isinstance(docs, dict) else docs
+        doc_values = docs.values() if isinstance(docs, dict) else docs
         for doc in doc_values:
             self._validate_doc(doc)
 

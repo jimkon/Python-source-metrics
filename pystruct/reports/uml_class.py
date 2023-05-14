@@ -1,4 +1,5 @@
 import ast
+from collections import OrderedDict
 from functools import cached_property, lru_cache
 
 import pandas as pd
@@ -233,13 +234,13 @@ class UMLClassBuilder(TreeNodeVisitor):
         return uml_doc.finish_and_return()
 
     def one_doc_per_package(self):
-        uml_docs = []
+        uml_docs = {}
         for package_name, package_dict in self._packages.items():
             uml_doc = PlantUMLDocument()
             uml_doc.add_package(package_name, package_dict)
-            uml_docs.append(uml_doc.finish_and_return())
+            uml_docs[package_name] = uml_doc.finish_and_return()
 
-        return uml_docs
+        return OrderedDict(uml_docs)
 
     def result(self):
         if self._seperate_packages:
