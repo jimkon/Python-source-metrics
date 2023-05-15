@@ -1,6 +1,25 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<h1>Open project</h1>
+    <form method="POST" action="/project/open">
+        <label for="load_project">Load Project:</label>
+        <select id="load_project" name="load_project" style="width: 30ch;">
+
+            {% for dataset_name in existing_dataset_names %}
+            {% if loop.first %}
+                <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
+            {% else %}
+                <option value="{{ dataset_name }}">{{ dataset_name }}</option>
+            {% endif %}
+        {% endfor %}
+
+        </select>
+
+        <input type="submit" value="Submit">
+    </form>
+
+
 <h1>Load another project</h1>
     <label class='error_label'>{{error_message}}</label>
     <form method="POST" action="/project/new/source">

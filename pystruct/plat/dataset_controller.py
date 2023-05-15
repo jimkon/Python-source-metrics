@@ -10,8 +10,18 @@ def get_project_root_path():
     return pathlib.Path(PATH_ROOT)
 
 
-class DatasetController(Singleton):
+class DatasetController:
+    __initialized = None
+
+    @classmethod
+    def get_instance(cls):
+        if not cls.__initialized:
+            cls.__initialized = DatasetController()
+            log_disk_ops(f"DatasetController: Instance is created.")
+        return cls.__initialized
+
     def __init__(self):
+        log_disk_ops(f"DatasetController: Initialising...")
         root = pathlib.Path(get_project_root_path())
         datasets_dir = root / 'datasets'
 
@@ -26,10 +36,16 @@ class DatasetController(Singleton):
             self._current_dataset = datasets[0]
         else:
             self._current_dataset = None
+        log_disk_ops(f"DatasetController: Reset dataset {self._current_dataset}.")
+
+    @property
+    def all_datasets(self):
+        return self._datasets.get_datasets()
 
     @property
     def current_dataset(self):
         if self._current_dataset is not None and not self._current_dataset.exists():
+            log_disk_ops(f"DatasetController: Current dataset needs to reset dataset {self._current_dataset}: exists={self._current_dataset.exists()}.")
             self._reset_current_dataset()
         return self._current_dataset
 
@@ -51,10 +67,12 @@ class DatasetController(Singleton):
             raise ValueError("At least one of dir_path or git_url parameters has to be populated.")
 
     def open(self, dataset_name):
+        log_disk_ops(f"DatasetController: Attempting to open dataset {dataset_name}.")
         for dataset in self._datasets.get_datasets():
             if dataset.name == dataset_name:
                 self._current_dataset = dataset
                 log_disk_ops(f"DatasetController: Opened dataset {self._current_dataset}.")
+                break
         else:
             log_disk_ops(f"DatasetController: Failed to open dataset {dataset_name} (Not found in {self._datasets.path}).")
         return self._current_dataset

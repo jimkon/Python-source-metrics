@@ -11,7 +11,8 @@ app.config['SECRET_KEY'] = 'test_key'
 debug_flag = True
 print(f"{debug_flag=}")
 
-dataset_controller = DatasetController()
+dataset_controller = DatasetController.get_instance()
+dataset_name = 'No project selected'
 
 
 @app.route('/')
@@ -19,12 +20,16 @@ def main():
     if dataset_controller.current_dataset is None:
         return redirect(url_for('project'))
 
+    global dataset_name
+    dataset_name = dataset_controller.current_dataset.name
+
     table_of_content_dict = {k: v.__name__ for k, v in FullReport.content_dict.items()}
     return render_template('index.html', **locals(), **globals())
 
 
 @app.route('/obj/<obj_class_name>')
 def obj(obj_class_name):
+    print("debug->", dataset_controller.current_dataset.name)
     cls = get_object_class_from_class_name(obj_class_name.replace(' ', ''))
     html_object = cls().to_html()
     return render_template('objects.html', **locals(), **globals())
@@ -49,7 +54,15 @@ def download_obj(obj_class_name):
 
 @app.route('/project/', methods=['GET'])
 def project():
+    existing_dataset_names = [dataset.name for dataset in dataset_controller.all_datasets]
     return render_template('project_menu.html', **locals(), **globals())
+
+
+@app.route('/project/open/', methods=['POST'])
+def open_project():
+    dataset_name = request.form['load_project']
+    dataset_controller.open(dataset_name)
+    return redirect(url_for('main'))
 
 
 @app.route('/project/new/source/', methods=['POST'])
@@ -111,3 +124,4 @@ if __name__ == "__main__":
 # TODO add open dataset functionality
 # TODO add delete dataset functionality
 # TODO add new git dataset functionality
+# TODO tidy up the logs

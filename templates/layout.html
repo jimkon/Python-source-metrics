@@ -6,6 +6,7 @@
     <link rel="stylesheet" href={{url_for('static', filename='styles.css')}}>
 </head>
 <body>
+<h1>Current project: {{ dataset_name }}</h1>
 <a href={{ url_for('main') }}>Home</a>
 {% if debug_flag %}
     <a href={{ url_for('debug') }}>Debug</a>

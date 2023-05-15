@@ -12,7 +12,7 @@ class AbstractFileAdapter(abc.ABC):
     def __init__(self, obj, file_ext, load_kwargs=None, save_kwargs=None):
         self._obj = obj
         self._file_ext = file_ext
-        self._root_dir = DatasetController().current_dataset.objects_directory / self._file_ext
+        self._root_dir = DatasetController.get_instance().current_dataset.objects_directory / self._file_ext
         self._cached_data = None
         self._load_kwargs, self._save_kwargs = load_kwargs, save_kwargs
 
