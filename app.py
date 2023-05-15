@@ -128,9 +128,6 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
 
 # TODO UMLClassRelationGraphHTMLObj fix and make it multitab
-# TODO add open dataset functionality
-# TODO add delete dataset functionality
-# TODO add new git dataset functionality
+# TODO fix delete dataset functionality (permission denied on windows)
 # TODO tidy up the logs
-# TODO add branch name to dataset name
 # TODO file explorer for load dataset

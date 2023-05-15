@@ -21,14 +21,27 @@
 
 
 <h1>Load another project</h1>
-    <label class='error_label'>{{error_message}}</label>
-    <form method="POST" action="/project/new/source">
-        <h2>Browse local files:</h2>
-            <label for="filepath_input">File path</label>
-            <input type="text" id="filepath_input" name="filepath_input" size="50"><br>
-            <input type="submit" id="filepath_load_button" value="Load path"><br>
-            <input type="file" id="filepath_browse_button" disabled webkitdirectory directory multiple/>
+    <form method="POST" action="/project/new/source" enctype="multipart/form-data">
+      <h2>Browse local files and directories:</h2>
+      <label for="file_input">Path:</label>
+      <input type="text" id="filepath_input" name="filepath_input" size="50">
+      <input type="button" id="browse_button" value="Browse" disabled>
+      <input type="submit" id="filepath_load_button" value="Load Path">
+      <input type="file" id="file_input" name="file_input" style="display: none;">
     </form>
+
+    <script>
+      document.getElementById('browse_button').addEventListener('click', function() {
+        document.getElementById('file_input').click();
+      });
+
+      document.getElementById('file_input').addEventListener('change', function(event) {
+        const filename = event.target.files[0].name;
+        document.getElementById('filepath_input').value = filename;
+      });
+    </script>
+
+
 
     <form method="POST" action="/project/new/git">
         <h2>Github project:</h2>
