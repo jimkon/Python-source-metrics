@@ -84,6 +84,13 @@ def new_git_project():
     return redirect(url_for('main'))
 
 
+@app.route('/project/delete/', methods=['POST'])
+def delete_project():
+    dataset_name = request.form['delete_project']
+    dataset_controller.delete(dataset_name)
+    return redirect(url_for('main'))
+
+
 @app.route('/debug')
 def debug():
     existing_objs = sorted([obj.stem for obj in dataset_controller.current_dataset.objects_directory.rglob('*') if obj.is_file()])
@@ -125,3 +132,5 @@ if __name__ == "__main__":
 # TODO add delete dataset functionality
 # TODO add new git dataset functionality
 # TODO tidy up the logs
+# TODO add branch name to dataset name
+# TODO file explorer for load dataset

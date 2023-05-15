@@ -7,16 +7,16 @@
         <select id="load_project" name="load_project" style="width: 30ch;">
 
             {% for dataset_name in existing_dataset_names %}
-            {% if loop.first %}
-                <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
-            {% else %}
-                <option value="{{ dataset_name }}">{{ dataset_name }}</option>
-            {% endif %}
-        {% endfor %}
+                {% if loop.first %}
+                    <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
+                {% else %}
+                    <option value="{{ dataset_name }}">{{ dataset_name }}</option>
+                {% endif %}
+            {% endfor %}
 
         </select>
 
-        <input type="submit" value="Submit">
+        <input type="submit" value="Open">
     </form>
 
 
@@ -41,8 +41,25 @@
         <label for="branch">Branch:</label>
         <input type="text" id="branch" name="branch" value="master"><br>
 
-        <input type="submit" value="Submit">
+        <input type="submit" value="Clone git">
     </form>
 
+<h1>Delete project</h1>
+    <form method="POST" action="/project/delete">
+        <label for="delete_project">Delete Project:</label>
+        <select id="delete_project" name="delete_project" style="width: 30ch;">
+
+            {% for dataset_name in existing_dataset_names %}
+                {% if loop.first %}
+                    <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
+                {% else %}
+                    <option value="{{ dataset_name }}">{{ dataset_name }}</option>
+                {% endif %}
+            {% endfor %}
+
+        </select>
+
+        <input type="submit" value="Delete">
+    </form>
 
 {% endblock content %}

@@ -59,6 +59,7 @@ class DatasetController:
             return dataset
         elif git_url is not None:
             dataset_name = git_url.split('/')[-1].split('.')[0]
+            dataset_name += f"{branch}" if branch != 'master' else ''
             dataset = self._datasets.new_dataset(dataset_name)
             dataset.add_python_files_from_git(git_url, code_dir=code_dir, branch=branch)
             self._current_dataset = dataset
