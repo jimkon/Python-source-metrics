@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest import mock
 
-from src.utils import paths
+from pystruct.utils import paths
 
 
 class TestPythonUtils(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestPythonUtils(unittest.TestCase):
         self.assertEqual(paths._last_path_part(os.sep.join(['a', 'b', 'c.ext'])), 'c.ext')
 
     def test_Path(self):
-        with mock.patch('src.utils.paths._validate_path') as mock_val:
+        with mock.patch('pystruct.utils.paths._validate_path') as mock_val:
             with mock.patch('os.path.isdir') as mock_os_isdir:
                 mock_os_isdir.side_effect = lambda x: {
                     r'C:\a\b\c': True,

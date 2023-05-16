@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Python source metric</title>
+    <link rel="stylesheet" href={{url_for('static', filename='styles.css')}}>
+</head>
+<body>
+<h1>Current project: {{ dataset_name }}</h1>
+<a href={{ url_for('main') }}>Home</a>
+{% if debug_flag %}
+    <a href={{ url_for('debug') }}>Debug</a>
+{% endif %}
+
+{% block content %}
+    <h1>Welcome to Python source metric!</h1>
+{% endblock content %}
+</body>
+</html>

@@ -1,10 +1,10 @@
 import os
 import tempfile
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch
 
-from src.objects.grab_code import CopyCode
-from src.configs import PATH_CODE_COPY_DIR
+from pystruct.configs import PATH_CODE_COPY_DIR
+from pystruct.objects.grab_code import CopyCode
 
 
 class TestGrabCode(unittest.TestCase):
@@ -38,8 +38,8 @@ class TestGrabCode(unittest.TestCase):
 
     @patch.object(CopyCode, 'copy_all_python_files')
     def test_all_python_filepaths(self, *args):
-        example_grab_all_python_paths = ['a.py', 'src/a.py']
-        another_example_grab_all_python_paths = ['b.py', 'src/b.py']
+        example_grab_all_python_paths = ['a.py', 'pystruct/a.py']
+        another_example_grab_all_python_paths = ['b.py', 'pystruct/b.py']
         with patch.object(CopyCode, '_grab_all_python_paths', return_value=example_grab_all_python_paths):
             gc_obj = CopyCode("a random path")
             self.assertEqual(gc_obj.all_python_filepaths, example_grab_all_python_paths)
@@ -113,14 +113,14 @@ class TestGrabCode(unittest.TestCase):
                 self.assertEqual(test_value, expected_value)
 
     @patch.object(CopyCode, 'copy_all_python_files')
-    @patch.object(CopyCode, '_grab_all_python_paths', return_value=['example_dir/src/a.py'])
+    @patch.object(CopyCode, '_grab_all_python_paths', return_value=['example_dir/pystruct/a.py'])
     def test__calculate_all_new_python_paths(self, mock_paths, mock_cpy):
-        gc_obj = CopyCode('example_dir//src')
+        gc_obj = CopyCode('example_dir//pystruct')
         self.assertEqual(gc_obj._base_dir, 'example_dir')
         self.assertEqual(gc_obj._working_dir, PATH_CODE_COPY_DIR)
 
         expected_new_paths = [
-            os.path.join(PATH_CODE_COPY_DIR, 'src/a.py')
+            os.path.join(PATH_CODE_COPY_DIR, 'pystruct/a.py')
         ]
 
         for new_path, exp_new_path in zip(gc_obj._calculate_all_new_python_paths(), expected_new_paths):
@@ -140,16 +140,16 @@ class TestGrabCode(unittest.TestCase):
         for new_path, exp_new_path in zip(gc_obj._calculate_all_new_python_paths(), expected_new_paths):
             self.assertEqual(os.path.normpath(exp_new_path), os.path.normpath(new_path))
 
-    @patch.object(CopyCode, '_grab_all_python_paths', return_value=['example_dir/src/a.py'])
-    @patch.object(CopyCode, '_calculate_all_new_python_paths', return_value=[os.path.join(PATH_CODE_COPY_DIR, 'src/a.py')])
+    @patch.object(CopyCode, '_grab_all_python_paths', return_value=['example_dir/pystruct/a.py'])
+    @patch.object(CopyCode, '_calculate_all_new_python_paths', return_value=[os.path.join(PATH_CODE_COPY_DIR, 'pystruct/a.py')])
     def test_copy_all_python_files(self, mock_grab, mock_calc):
-        with patch("src.objects.grab_code.path_utils.copy_file_from_to") as mock_cpy:
-            CopyCode('example_dir//src')
-            mock_cpy.assert_called_with('example_dir/src/a.py', os.path.join(PATH_CODE_COPY_DIR, 'src/a.py'))
+        with patch("pystruct.objects.grab_code.path_utils.copy_file_from_to") as mock_cpy:
+            CopyCode('example_dir//pystruct')
+            mock_cpy.assert_called_with('example_dir/pystruct/a.py', os.path.join(PATH_CODE_COPY_DIR, 'pystruct/a.py'))
 
     def test_grab_code_execution(self):
         with tempfile.TemporaryDirectory() as dest_dir:
-            with patch("src.objects.grab_code.PATH_CODE_COPY_DIR", dest_dir) as mock_dest_dir:
+            with patch("pystruct.objects.grab_code.PATH_CODE_COPY_DIR", dest_dir) as mock_dest_dir:
                 with tempfile.TemporaryDirectory() as src_dir:
                     open(os.path.join(src_dir, "a.py"), 'w').close()
                     open(os.path.join(src_dir, "b.not_py"), 'w').close()

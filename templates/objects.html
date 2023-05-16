@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h3><a href={{url_for('download_obj', obj_class_name=obj_class_name+".html")}}>Download page</a></h3>
+    {{html_object|safe}}
+{% endblock content %}

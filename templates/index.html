@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Home</h1>
+    Reports:
+    <ul>
+        {% for title, obj_class_name in table_of_content_dict.items() %}
+            <li><a href={{url_for('obj', obj_class_name=obj_class_name)}}>{{title}}</a></li>
+        {% endfor %}
+    </ul>
+<h3><a href={{url_for('download_obj', obj_class_name="FullReport")}}>Download full report</a></h3>
+<h3><a href={{url_for('project')}}>Load another project</a></h3>
+{% endblock content %}

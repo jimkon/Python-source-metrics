@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 
-from src.utils import python_file_utils as pu
+from pystruct.utils import python_file_utils as pu
 
 
 class TestPythonUtils(unittest.TestCase):
@@ -18,12 +18,12 @@ class TestPythonUtils(unittest.TestCase):
         self.assertEqual(pu.convert_python_path_to_module_name("c.py"), 'c')
 
     def test_get_all_python_files(self):
-        with mock.patch("src.utils.python_file_utils.get_all_filenames_in_directory") as mocker_files:
+        with mock.patch("pystruct.utils.python_file_utils.get_all_filenames_in_directory") as mocker_files:
             mocker_files.return_value = ["a", "a.py", "a/b", "a/b.extension", "a/b/c.py", "a/b/c"]
 
             self.assertEqual(pu.get_all_python_files(''), ["a.py", "a/b/c.py"])
 
-        with mock.patch("src.utils.python_file_utils.get_all_filenames_in_directory") as mocker_files:
+        with mock.patch("pystruct.utils.python_file_utils.get_all_filenames_in_directory") as mocker_files:
             mocker_files.return_value = ["a", "a/b/d"]
 
             self.assertEqual(pu.get_all_python_files(''), [])
