@@ -11,14 +11,14 @@ def get_project_root_path():
 
 
 class DatasetController:
-    __initialized = None
+    __instance = None
 
     @classmethod
     def get_instance(cls):
-        if not cls.__initialized:
-            cls.__initialized = DatasetController()
+        if cls.__instance is None:
+            cls.__instance = DatasetController()
             log_disk_ops(f"DatasetController: Instance is created.")
-        return cls.__initialized
+        return cls.__instance
 
     def __init__(self):
         log_disk_ops(f"DatasetController: Initialising...")

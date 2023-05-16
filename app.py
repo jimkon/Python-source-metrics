@@ -6,13 +6,17 @@ from pystruct.plat.dataset_controller import DatasetController
 from pystruct.utils.object_utils import get_all_concrete_object_classes
 from pystruct.utils.object_utils import get_object_class_from_class_name
 
+dataset_name = 'No project selected'
+dataset_controller = DatasetController.get_instance()
+
+from pystruct.utils.plantuml_utils import PlantUMLService
+PlantUMLService.get_instance()
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test_key'
 debug_flag = True
-print(f"{debug_flag=}")
-
-dataset_controller = DatasetController.get_instance()
-dataset_name = 'No project selected'
+app.logger.info(f"{debug_flag=}")
+app.logger.info(f"{dataset_controller.current_dataset=}")
 
 
 @app.route('/')
@@ -131,3 +135,5 @@ if __name__ == "__main__":
 # TODO fix delete dataset functionality (permission denied on windows)
 # TODO tidy up the logs
 # TODO file explorer for load dataset
+# TODO make sure it runs from docker also
+# TODO fix bug @startuml Error: [Errno 99] Cannot assign requested address @enduml

@@ -81,7 +81,7 @@ def log_obj_stage(*args, **kwargs):
 
 
 def log_plantuml(*args, **kwargs):
-    log_pink(*args, **kwargs)
+    log_pink("PLANTUML:", *args, **kwargs)
 
 
 def timing_log(_func):

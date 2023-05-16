@@ -49,7 +49,7 @@ class PackageColorMappingDataframe(DataframeObjectABC, JSONableMixin):
 class PlantUMLGraphSingleHTMLPageObj(AbstractObject, abc.ABC):
     def __init__(self, multithread=False):
         super().__init__(HTMLFile(self))
-        self._plant_uml = PlantUMLService(multithread)
+        self._plant_uml = PlantUMLService.get_instance()
 
     def build(self):
         docs = self.build_plantuml_docs()
@@ -74,7 +74,7 @@ class PlantUMLGraphSingleHTMLPageObj(AbstractObject, abc.ABC):
 class PlantUMLGraphMultiTabHTMLPageObj(AbstractObject, abc.ABC):
     def __init__(self, multithread=False):
         super().__init__(HTMLFile(self))
-        self._plant_uml = PlantUMLService(multithread)
+        self._plant_uml = PlantUMLService.get_instance()
 
     def build(self):
         docs = self.build_plantuml_docs()
