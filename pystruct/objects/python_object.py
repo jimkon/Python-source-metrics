@@ -1,20 +1,18 @@
-import os
-
-from pystruct.configs import PATH_CODE_COPY_DIR
-from pystruct.objects.data_objects import AbstractObject
+from pystruct.objects.data_objects import JSONObjectABC
+from pystruct.plat.dataset_controller import DatasetController
 from pystruct.python.python_source_obj import PythonSourceObj
-from pystruct.utils.file_strategies import JsonFile
 
 
-class PObject(AbstractObject):
+class PObject(JSONObjectABC):
     def __init__(self):
-        super().__init__(JsonFile(self))
+        super().__init__()
         self._pobj = None
 
     def build(self):
-        srcs = os.listdir(PATH_CODE_COPY_DIR)
-        src_path = os.path.join(PATH_CODE_COPY_DIR, srcs[0])
-        self._pobj = PythonSourceObj.from_project_source(src_path)
+        # srcs = os.listdir(PATH_CODE_COPY_DIR)
+        # src_path = os.path.join(PATH_CODE_COPY_DIR, srcs[0])
+        code_dir = DatasetController.get_instance().current_dataset.code_directory
+        self._pobj = PythonSourceObj.from_project_source(code_dir)
         return self._pobj.to_dict()
 
     def python_source_object(self):

@@ -7,12 +7,12 @@ from pystruct.utils.plots import plot_hist_and_quartiles
 plt.style.use('bmh')
 
 from pystruct.metrics.metrics_core import MetricObject
-from pystruct.objects.data_objects import DataframeObject, HTMLTableObject
+from pystruct.objects.data_objects import DataframeObjectABC, HTMLTableObjectABC
 from pystruct.objects.metric_stats import ValueCountMetricObj, MatplotlibGraphMetricObj
 
 
 class TypeMetricObj(MetricObject):
-    name = 'type'
+    metric_name = 'type'
 
     def calculate(self, p_obj, **kwargs):
         return p_obj.type
@@ -20,11 +20,12 @@ class TypeMetricObj(MetricObject):
 
 class TypeMetricValueCountsTable(ValueCountMetricObj):
     def get_series(self):
-        return TypeMetricObj().data()['type']
+        obj = TypeMetricObj()
+        return obj.data()[obj.metric_name]
 
 
 class NumberOfCodeLinesMetricObj(MetricObject):
-    name = 'number_of_lines'
+    metric_name = 'number_of_lines'
 
     def _calc(self, p_obj):
         return len(p_obj.code_lines)
@@ -42,16 +43,15 @@ class NumberOfCodeLinesMetricObj(MetricObject):
         return self._calc(function_obj)
 
 
-class GeneralItemMetricObj(DataframeObject):
+class GeneralItemMetricObj(DataframeObjectABC):
     def build(self):
         df_lines = NumberOfCodeLinesMetricObj().data()
         df_types = TypeMetricObj().data()
 
         df = df_types.merge(df_lines, on='item', how='left')
-
-        df_agg_stats = df.groupby('type').agg({
+        df_agg_stats = df.groupby(TypeMetricObj.metric_name).agg({
             'item': 'count',
-            'number_of_lines': ['sum', 'min', 'mean', 'max']
+            NumberOfCodeLinesMetricObj.metric_name: ['sum', 'min', 'mean', 'max']
         }).sort_values(by=[('item', 'count')]).reset_index()
 
         df_agg_stats.columns = df_agg_stats.columns.droplevel(0)
@@ -72,7 +72,7 @@ class GeneralItemMetricObj(DataframeObject):
         return df_agg_stats
 
 
-class GeneralItemMetricHTMLTable(HTMLTableObject):
+class GeneralItemMetricHTMLTable(HTMLTableObjectABC):
     def build_dataframe(self):
         return GeneralItemMetricObj().data()
 
@@ -89,14 +89,14 @@ class NumberOfCodeLinesHistogram(MatplotlibGraphMetricObj):
             plt.subplot(1, 4, i+1)
             plt.xlabel(type)
             if i == 0:
-                plt.ylabel('number_of_lines')
+                plt.ylabel(NumberOfCodeLinesMetricObj.metric_name)
             # plt.boxplot(df[df['type'] == type]['number_of_lines'])
-            plot_hist_and_quartiles(df[df['type'] == type]['number_of_lines'])
+            plot_hist_and_quartiles(df[df[TypeMetricObj.metric_name] == type][NumberOfCodeLinesMetricObj.metric_name])
         plt.tight_layout()
 
 
 class NumberOfArgsInFunctionsMetricObj(MetricObject):
-    name = 'number_of_args_in_functions'
+    metric_name = 'number_of_args_in_functions'
 
     @staticmethod
     def _fetch_args(p_obj):
@@ -127,14 +127,14 @@ class FunctionArgsHistogram(MatplotlibGraphMetricObj):
             plt.subplot(1, 2, i + 1)
             plt.xlabel(type)
             if i == 0:
-                plt.ylabel('number_of_args_in_functions')
+                plt.ylabel(NumberOfArgsInFunctionsMetricObj.metric_name)
             # plt.boxplot(df[df['type'] == type]['number_of_args_in_functions'])
-            plot_hist_and_quartiles(df[df['type'] == type]['number_of_args_in_functions'])
+            plot_hist_and_quartiles(df[df[TypeMetricObj.metric_name] == type][NumberOfArgsInFunctionsMetricObj.metric_name])
         plt.tight_layout()
 
 
 class IsScriptFile(MetricObject):
-    name = 'is_script_file'
+    metric_name = 'is_script_file'
 
     def calculate_module(self, module_obj, **kwargs):
         all_code = module_obj.code.replace('\n', '').replace(' ', '').replace('"', "'")

@@ -1,9 +1,13 @@
 import re
+import typing
 from urllib.error import URLError
 from urllib.request import urlopen
 import pkgutil
 from functools import lru_cache
 import logging
+
+from pystruct.utils import logs
+
 
 @lru_cache
 def all_python_builtin_packages():
@@ -12,7 +16,6 @@ def all_python_builtin_packages():
 
 @lru_cache
 def is_python_builtin_package(pkg_name):
-    # TODO save a version of fetch_python_builtin_packages_from_python_docs to a file
     """
     If the machine is connected to the internet it will try to fetch the python built-in
     packages from the original Python docs site. Otherwise, it will fetch them from pkgutil
@@ -38,3 +41,36 @@ def fetch_python_builtin_packages_from_python_docs():
     packages = [pkg.split(r'library/')[1].split(r'.html')[0] for pkg in re.findall('<a href=\"library/\w+\.html', html)]
     return packages
 
+
+def subclasses_of_class(cls):
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in subclasses_of_class(c)])
+
+
+class Singleton(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__new__(cls)
+        else:
+            logs.log_general(f"Singleton: Object {cls.__name__} is already initialized.")
+        return cls._instance
+
+
+class MultiSingleton(object):
+    _instance = {}
+
+    def __new__(cls, key, *args, **kwargs):
+        key_str = str(key)
+
+        # if isinstance(key_str, typing.Hashable):
+        #     raise ValueError(f"MultiSingleton: First init argument of {cls.__name__} object must be hashable.")
+
+        if key_str not in cls._instance.keys():
+            cls._instance[key_str] = super(MultiSingleton, cls).__new__(cls)
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key_str}'] got initialized.")
+
+        else:
+            logs.log_general(f"MultiSingleton: Object {cls.__name__}['{key_str}'] is already initialized.")
+        return cls._instance[key_str]

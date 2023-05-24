@@ -46,7 +46,7 @@ def separate_statement(code, ast_var):
     return res_code_str, remaining_code_lines_str
 
 
-def get_first_ast_of_type(code, list_of_types):# todo maybe avoid calling analyse_ast
+def get_first_ast_of_type(code, list_of_types):
     asts = analyse_ast(code)
     for _ast in asts:
         for _type in list_of_types:

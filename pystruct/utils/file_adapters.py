@@ -4,15 +4,15 @@ import os
 
 import pandas as pd
 
-from pystruct.configs import PATH_FILES_DIR
+from pystruct.plat.dataset_controller import DatasetController
 from pystruct.utils import logs
 
 
-class AbstractFileStrategy(abc.ABC):
+class AbstractFileAdapter(abc.ABC):
     def __init__(self, obj, file_ext, load_kwargs=None, save_kwargs=None):
         self._obj = obj
-        self._root_dir = PATH_FILES_DIR+"/objs/"  # root_dir
         self._file_ext = file_ext
+        self._root_dir = DatasetController.get_instance().current_dataset.objects_directory / self._file_ext
         self._cached_data = None
         self._load_kwargs, self._save_kwargs = load_kwargs, save_kwargs
 
@@ -58,7 +58,7 @@ class AbstractFileStrategy(abc.ABC):
         pass
 
 
-class JsonFile(AbstractFileStrategy):
+class JsonFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='json', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 
@@ -72,7 +72,21 @@ class JsonFile(AbstractFileStrategy):
             json.dump(data, f, indent=4)
 
 
-class HTMLFile(AbstractFileStrategy):
+class TextFile(AbstractFileAdapter):
+    def __init__(self, obj, file_ext='txt', load_kwargs=None, save_kwargs=None):
+        super().__init__(obj, file_ext=file_ext, load_kwargs=load_kwargs, save_kwargs=save_kwargs)
+
+    def load_from_file(self, filepath, **kwargs):
+        with open(filepath, 'r') as f:
+            return f.read()
+
+    def save_to_file(self, data, filepath, **kwargs):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, 'w') as f:
+            f.write(data)
+
+
+class HTMLFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='html', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 
@@ -86,7 +100,7 @@ class HTMLFile(AbstractFileStrategy):
             f.write(data)
 
 
-class DataframeFile(AbstractFileStrategy):
+class DataframeFile(AbstractFileAdapter):
     def __init__(self, obj, load_kwargs=None, save_kwargs=None):
         super().__init__(obj, file_ext='csv', load_kwargs=load_kwargs, save_kwargs=save_kwargs)
 

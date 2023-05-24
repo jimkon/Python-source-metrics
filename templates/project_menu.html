@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1>Open project</h1>
+    <form method="POST" action="/project/open">
+        <label for="load_project">Load Project:</label>
+        <select id="load_project" name="load_project" style="width: 30ch;">
+
+            {% for dataset_name in existing_dataset_names %}
+                {% if loop.first %}
+                    <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
+                {% else %}
+                    <option value="{{ dataset_name }}">{{ dataset_name }}</option>
+                {% endif %}
+            {% endfor %}
+
+        </select>
+
+        <input type="submit" value="Open">
+    </form>
+
+
+<h1>Load another project</h1>
+    <form method="POST" action="/project/new/source" enctype="multipart/form-data">
+      <h2>Browse local files and directories:</h2>
+      <label for="file_input">Path:</label>
+      <input type="text" id="filepath_input" name="filepath_input" size="50">
+      <input type="button" id="browse_button" value="Browse" disabled>
+      <input type="submit" id="filepath_load_button" value="Load Path">
+      <input type="file" id="file_input" name="file_input" style="display: none;">
+    </form>
+
+    <script>
+      document.getElementById('browse_button').addEventListener('click', function() {
+        document.getElementById('file_input').click();
+      });
+
+      document.getElementById('file_input').addEventListener('change', function(event) {
+        const filename = event.target.files[0].name;
+        document.getElementById('filepath_input').value = filename;
+      });
+    </script>
+
+
+
+    <form method="POST" action="/project/new/git">
+        <h2>Github project:</h2>
+        <label for="git_url">Git URL:</label>
+        <input type="text" id="git_url" name="git_url" required size="50"><br>
+
+        <label for="source_directory">Source Directory:</label>
+        <input type="text" id="source_directory" name="source_directory" required><br>
+
+        <label for="branch">Branch:</label>
+        <input type="text" id="branch" name="branch" value="master"><br>
+
+        <input type="submit" value="Clone git">
+    </form>
+
+<h1>Delete project</h1>
+    <form method="POST" action="/project/delete">
+        <label for="delete_project">Delete Project:</label>
+        <select id="delete_project" name="delete_project" style="width: 30ch;">
+
+            {% for dataset_name in existing_dataset_names %}
+                {% if loop.first %}
+                    <option value="{{ dataset_name }}" selected>{{ dataset_name }}</option>
+                {% else %}
+                    <option value="{{ dataset_name }}">{{ dataset_name }}</option>
+                {% endif %}
+            {% endfor %}
+
+        </select>
+
+        <input type="submit" value="Delete">
+    </form>
+
+{% endblock content %}

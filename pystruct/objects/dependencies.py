@@ -1,12 +1,25 @@
 import pandas as pd
 
-from pystruct.objects.data_objects import DataframeObject
+from pystruct.objects.data_objects import DataframeObjectABC
 from pystruct.objects.imports_data_objects import ImportsEnrichedDataframe
 
 
-class PackageAndModulesMapping(DataframeObject):
+def _unique_sorted_string_agg(items):
+    filtered_items = [item for item in items if isinstance(item, str)]
+    return ','.join(sorted(set(filtered_items   )))
+
+
+def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):
+    agg_rows = imports_df.groupby(groupby_column).agg({agg_column: [_unique_sorted_string_agg, pd.Series.nunique]})
+    agg_rows.columns = [f'{new_column_name}s', f'number_of_{new_column_name}s']
+    agg_rows[f'number_of_{new_column_name}s'].fillna(0, inplace=True)
+    # agg_rows[f'number_of_{new_column_name}s'] = agg_rows[f'number_of_{new_column_name}s'].astype(int)
+    return agg_rows
+
+
+class PackageAndModulesMapping(DataframeObjectABC):
     def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
+        super().__init__()
 
     def build(self):
         df = ImportsEnrichedDataframe().data()
@@ -18,15 +31,7 @@ class PackageAndModulesMapping(DataframeObject):
         return df_res
 
 
-def _produce_unique_and_nunique_from_df(imports_df, new_column_name, groupby_column, agg_column):
-    agg_rows = imports_df.groupby(groupby_column).agg({agg_column: [pd.Series.unique, pd.Series.nunique]})
-    agg_rows.columns = [f'{new_column_name}s', f'number_of_{new_column_name}s']
-    agg_rows[f'number_of_{new_column_name}s'].fillna(0, inplace=True)
-    # agg_rows[f'number_of_{new_column_name}s'] = agg_rows[f'number_of_{new_column_name}s'].astype(int)
-    return agg_rows
-
-
-class PackageDependencyStatsDataframe(DataframeObject):
+class PackageDependencyStatsDataframe(DataframeObjectABC):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
         df = ImportsEnrichedDataframe().data()
@@ -90,7 +95,7 @@ class PackageDependencyStatsDataframe(DataframeObject):
         return res
 
 
-class ModuleDependencyStatsDataframe(DataframeObject):
+class ModuleDependencyStatsDataframe(DataframeObjectABC):
     def __init__(self):
         super().__init__(read_csv_kwargs={'index_col': None, 'header': 0}, to_csv_kwargs={'index': False})
         df = ImportsEnrichedDataframe().data()

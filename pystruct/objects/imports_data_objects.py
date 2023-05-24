@@ -1,17 +1,14 @@
 import pandas as pd
 
-from pystruct.html_utils.html_pages import HTMLPage
+from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
 from pystruct.metrics.import_metrics import enrich_import_raw_df
-from pystruct.objects.data_objects import DataframeObject, HTMLTableObject, HTMLObject
+from pystruct.objects.data_objects import DataframeObjectABC, HTMLTableObjectABC, HTMLObjectABC
 from pystruct.objects.metric_obj import IsScriptFile
 from pystruct.objects.python_object import PObject
 from pystruct.reports.import_graph import CollectImportsVisitor
 
 
-class ImportsRawDataframe(DataframeObject):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
-
+class ImportsRawDataframe(DataframeObjectABC):
     def build(self):
         pobj = PObject().python_source_object()
         imports_col = CollectImportsVisitor()
@@ -19,10 +16,7 @@ class ImportsRawDataframe(DataframeObject):
         return imports_col.result()
 
 
-class ImportsEnrichedDataframe(DataframeObject):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
-
+class ImportsEnrichedDataframe(DataframeObjectABC):
     def build(self):
         df = ImportsRawDataframe().data()
 
@@ -35,7 +29,7 @@ class ImportsEnrichedDataframe(DataframeObject):
         return df_enriched
 
 
-class MostImportedPackages(HTMLTableObject):
+class MostImportedPackages(HTMLTableObjectABC):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
         value_counts = df['import_root'].value_counts()
@@ -46,7 +40,7 @@ class MostImportedPackages(HTMLTableObject):
         return res_df
 
 
-class MostImportedProjectModules(HTMLTableObject):
+class MostImportedProjectModules(HTMLTableObjectABC):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
         value_counts = df['import_module'].value_counts()
@@ -57,7 +51,7 @@ class MostImportedProjectModules(HTMLTableObject):
         return res_df
 
 
-class MostImportedProjectPackages(HTMLTableObject):
+class MostImportedProjectPackages(HTMLTableObjectABC):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
         value_counts = df[df['is_internal']]['import_package'].value_counts()
@@ -68,24 +62,21 @@ class MostImportedProjectPackages(HTMLTableObject):
         return res_df
 
 
-class UnusedModules(HTMLTableObject):
+class UnusedModules(HTMLTableObjectABC):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
         df = df[df['module_name'] != '__init__']
         return df[df['unused_module']][['module', 'is_script_file']].drop_duplicates()
 
 
-class InvalidImports(HTMLTableObject):
+class InvalidImports(HTMLTableObjectABC):
     def build_dataframe(self):
         df = ImportsEnrichedDataframe().data()
         filtered_df = df[df['invalid_import']]
         return filtered_df[['module', 'imports']]
 
 
-class InProjectImportModuleGraphDataframe(DataframeObject):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
-
+class InProjectImportModuleGraphDataframe(DataframeObjectABC):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
@@ -94,10 +85,7 @@ class InProjectImportModuleGraphDataframe(DataframeObject):
         return df_graph
 
 
-class PackagesImportModuleGraphDataframe(DataframeObject):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
-
+class PackagesImportModuleGraphDataframe(DataframeObjectABC):
     def build(self):
         df = ImportsEnrichedDataframe().data()
 
@@ -106,14 +94,14 @@ class PackagesImportModuleGraphDataframe(DataframeObject):
         return df_graph
 
 
-class ImportsStatsHTML(HTMLObject):
+class ImportsStatsHTML(HTMLObjectABC):
     def build(self):
-        page = HTMLPage()
-        page.add_element(MostImportedPackages().data())
-        page.add_element(MostImportedProjectModules().data())
-        page.add_element(MostImportedProjectPackages().data())
-        page.add_element(UnusedModules().data())
-        page.add_element(InvalidImports().data())
+        page = TabsHTML()
+        page.add_tab(MostImportedPackages.name(), MostImportedPackages().data())
+        page.add_tab(MostImportedProjectModules.name(), MostImportedProjectModules().data())
+        page.add_tab(MostImportedProjectPackages.name(), MostImportedProjectPackages().data())
+        page.add_tab(UnusedModules.name(), UnusedModules().data())
+        page.add_tab(InvalidImports.name(), InvalidImports().data())
         return page.html()
 
 

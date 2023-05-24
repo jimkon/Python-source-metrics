@@ -4,17 +4,10 @@
     <h1>Home</h1>
     Reports:
     <ul>
-        {% for title, obj_class in table_of_content_dict.items() %}
-            <li><a href={{url_for('obj', obj_class=obj_class)}}>{{title}}</a></li>
+        {% for title, obj_class_name in table_of_content_dict.items() %}
+            <li><a href={{url_for('obj', obj_class_name=obj_class_name)}}>{{title}}</a></li>
         {% endfor %}
     </ul>
-<h3><a href={{url_for('download_obj', obj_class="FullReport.html")}}>Download full report</a></h3>
-<h3><a href={{url_for('load_project')}}>Load another project</a></h3>
-{% if debug_flag %}
-    <h2>Debug is enabled</h2>
-    {% for _cls in all_objects %}
-        <a href={{url_for('build_obj', obj_class=_cls)}}>{{_cls}}</a><br>
-    {% endfor %}
-
-{% endif %}
+<h3><a href={{url_for('download_obj', obj_class_name="FullReport")}}>Download full report</a></h3>
+<h3><a href={{url_for('project')}}>Load another project</a></h3>
 {% endblock content %}

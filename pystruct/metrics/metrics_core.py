@@ -2,7 +2,7 @@ import abc
 
 import pandas as pd
 
-from pystruct.objects.data_objects import DataframeObject
+from pystruct.objects.data_objects import DataframeObjectABC
 from pystruct.objects.python_object import PObject
 from pystruct.utils.logs import log_yellow
 from pystruct.visitors.visitor import TreeNodeVisitor
@@ -49,11 +49,11 @@ class CalculateMetricVisitor(TreeNodeVisitor):
 
     def results(self):
         data_array = list(self._results.items())
-        return pd.DataFrame.from_records(data_array, columns=['item', self._metric.name])
+        return pd.DataFrame.from_records(data_array, columns=['item', self._metric.metric_name])
 
 
 class Metric(abc.ABC):
-    name = 'no-name'
+    metric_name = None
 
     def calculate(self, p_obj, **kwargs):
         pass
@@ -74,9 +74,9 @@ class Metric(abc.ABC):
         pass
 
 
-class MetricObject(DataframeObject, Metric):
+class MetricObject(DataframeObjectABC, Metric):
     def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None}, to_csv_kwargs={'index': False})
+        super().__init__()
 
     def build(self):
         pobj = PObject().python_source_object()

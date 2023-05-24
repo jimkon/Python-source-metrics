@@ -1,14 +1,13 @@
 import os.path
-import tempfile
 from functools import lru_cache
 
-# from git import Repo
+from git import Repo
 
 from pystruct.configs import PATH_CODE_COPY_DIR, PATH_FILES_DIR, PATH_GIT_COPY_DIR
 from pystruct.utils import path_utils
 from pystruct.utils.logs import log_yellow, log_cyan, log_red, log_pink
-from pystruct.utils.python_file_utils import find_source_dirs
 from pystruct.utils.path_utils import delete_dir_if_exists
+from pystruct.utils.python_file_utils import find_source_dirs
 
 
 def is_git_url(url):

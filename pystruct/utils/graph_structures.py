@@ -35,3 +35,5 @@ class Graph:
         res_graph_objs.sort(key=lambda g: len(g.nodes), reverse=True)
         return res_graph_objs
 
+    def size(self):
+        return len(self.nodes)

@@ -1,9 +1,12 @@
+import abc
+
 import markdown
 import pandas as pd
 
+from pystruct.objects.data_objects import PlantUMLDocumentObjABC
 from pystruct.html_utils.html_pages import HTMLPage, TabsHTML
 from pystruct.metrics.import_metrics import breakdown_import_path
-from pystruct.objects.data_objects import AbstractObject, HTMLObject, DataframeObject
+from pystruct.objects.data_objects import AbstractObject, HTMLObjectABC, DataframeObjectABC
 from pystruct.objects.dependencies import PackageDependencyStatsDataframe, ModuleDependencyStatsDataframe, \
     PackageAndModulesMapping
 from pystruct.objects.imports_data_objects import PackagesImportModuleGraphDataframe, ImportsEnrichedDataframe
@@ -11,16 +14,14 @@ from pystruct.objects.python_object import PObject
 from pystruct.reports.uml_class import UMLClassBuilder, UMLClassRelationBuilder, ObjectRelationGraphBuilder, \
     PlantUMLPackagesAndModulesBuilder
 from pystruct.utils.color_utils import getDistinctColors
-from pystruct.utils.data_mixins import JSONableMixin
-from pystruct.utils.file_strategies import HTMLFile
+from pystruct.utils.file_adapters import HTMLFile
 from pystruct.utils.graph_structures import Graph
+from pystruct.utils.mixins import JSONableMixin
 from pystruct.utils.plantuml_utils import PlantUMLService
+from pystruct.utils.string_utils import single_to_multiline_string
 
 
-class PackageColorMappingDataframe(DataframeObject, JSONableMixin):
-    def __init__(self):
-        super().__init__(read_csv_kwargs={'index_col': None, 'header':0}, to_csv_kwargs={'index': False})
-
+class PackageColorMappingDataframe(DataframeObjectABC, JSONableMixin):
     def build(self):
         df = ImportsEnrichedDataframe().data()
         all_packages = sorted(list(set(df['package'].unique()).union(df[df['is_internal']]['import_package'].dropna().unique())))
@@ -45,16 +46,18 @@ class PackageColorMappingDataframe(DataframeObject, JSONableMixin):
         return self.data().set_index('package').to_dict(orient='index')
 
 
-class PlantUMLDiagramObj(AbstractObject):
+class PlantUMLGraphSingleHTMLPageObj(AbstractObject, abc.ABC):
     def __init__(self, multithread=False):
         super().__init__(HTMLFile(self))
-        self._plant_uml = PlantUMLService(multithread)
+        self._plant_uml = PlantUMLService.get_instance()
 
     def build(self):
-        docs = self.plantuml_docs()
+        docs = self.build_plantuml_docs()
 
         if isinstance(docs, str):
             docs = [docs]
+        if isinstance(docs, dict):
+            docs = list(docs.values())
 
         plantuml_diagram_html_images = self._plant_uml.convert_multiple_docs_to_html_images(docs)
 
@@ -63,15 +66,39 @@ class PlantUMLDiagramObj(AbstractObject):
 
         return html_page.html()
 
-    def plantuml_docs(self):
+    @abc.abstractmethod
+    def build_plantuml_docs(self):
         pass
 
 
-class UMLClassDiagramObj(PlantUMLDiagramObj):
-    def __init__(self):
-        super().__init__(multithread=True)
+class PlantUMLGraphMultiTabHTMLPageObj(AbstractObject, abc.ABC):
+    def __init__(self, multithread=False):
+        super().__init__(HTMLFile(self))
+        self._plant_uml = PlantUMLService.get_instance()
 
-    def plantuml_docs(self):
+    def build(self):
+        docs = self.build_plantuml_docs()
+
+        if isinstance(docs, str):
+            docs = [docs]
+        if isinstance(docs, list):
+            docs = {f"document_{i}": doc for i, doc in enumerate(docs)}
+
+        plantuml_diagram_html_images = {title: self._plant_uml.convert_doc_to_html_image(doc)
+                                        for title, doc in docs.items()}
+
+        html_page = TabsHTML()
+        [html_page.add_tab(title, html_image) for title, html_image in plantuml_diagram_html_images.items()]
+
+        return html_page.html()
+
+    @abc.abstractmethod
+    def build_plantuml_docs(self):
+        pass
+
+
+class UMLClassDocumentObj(PlantUMLDocumentObjABC):
+    def build(self):
         pobj = PObject().python_source_object()
 
         uml_builder = UMLClassBuilder()
@@ -82,8 +109,13 @@ class UMLClassDiagramObj(PlantUMLDiagramObj):
         return plantuml_doc_strings
 
 
-class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
+class UMLClassGraphHTMLObj(PlantUMLGraphMultiTabHTMLPageObj):
+    def build_plantuml_docs(self):
+        return UMLClassDocumentObj().documents()
+
+
+class UMLClassRelationDocumentObj(PlantUMLDocumentObjABC):
+    def build(self):
         pobj = PObject().python_source_object()
 
         uml_builder = UMLClassRelationBuilder()
@@ -91,7 +123,7 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
 
         plantuml_doc_strings = uml_builder.result()
 
-        plantuml_doc_strings = UMLClassRelationDiagramObj.split_documents(plantuml_doc_strings)
+        plantuml_doc_strings = UMLClassRelationDocumentObj.split_documents(plantuml_doc_strings)
         return plantuml_doc_strings
 
     @staticmethod
@@ -112,8 +144,13 @@ class UMLClassRelationDiagramObj(PlantUMLDiagramObj):
         return subgraph_docs
 
 
-class PackageRelationsGraphObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
+class UMLClassRelationGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
+    def build_plantuml_docs(self):
+        return UMLClassRelationDocumentObj().documents()
+
+
+class PackageRelationsDocumentObj(PlantUMLDocumentObjABC):
+    def build(self):
         df_pkgs = self.produce_data()
 
         plantuml_doc = PlantUMLPackagesAndModulesBuilder(direction='top to bottom direction')
@@ -126,20 +163,24 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
 
             total_internal_imports = int(row['total_imports']) if row['total_imports'] else 0
             total_unique_internal_imports = int(row['number_of_internal_packages']) if row['number_of_internal_packages'] else 0
-            internal_imports = row['internal_packages'] if row['internal_packages'] else ''
+            internal_imports = self._present_packages(row['internal_packages'], remove_package_root=True) if row['internal_packages'] else ''
             total_external_imports = int(row['number_of_external_packages']) if row['number_of_external_packages'] else 0
-            external_imports = row['external_packages'] if row['external_packages'] else ''
-            python_builtins = int(row['number_of_builtin_packages']) if row['number_of_builtin_packages'] else 0
+            external_imports = self._present_packages(row['external_packages']) if row['external_packages'] else ''
+            total_python_builtins = int(row['number_of_builtin_packages']) if row['number_of_builtin_packages'] else 0
+            python_builtins = self._present_packages(row['builtin_packages']) if row['builtin_packages'] else ''
             total_imported = int(row['total_imported']) if row['total_imported'] else 0
             total_unique_imported = int(row['times_been_imported_from_packages']) if row['times_been_imported_from_packages'] else 0
-            imported_from = row['imported_from_packages'] if row['imported_from_packages'] else ''
-            plantuml_doc.add_note(  # TODO keep only package name on internals, not full package path
-                f"internal imports: {total_internal_imports}\n"
-                f"> ({total_unique_internal_imports} unique {self._keep_package_names(internal_imports)})\n"
-                f"other imports   : {total_external_imports}\n"
-                f"> {external_imports}   ({python_builtins} python builtins*)\n"
-                f"imported by     : {total_imported}\n"
-                f"> ({total_unique_imported} unique {self._keep_package_names(imported_from)}"
+            imported_from = self._present_packages(row['imported_from_packages'], remove_package_root=True) if row['imported_from_packages'] else ''
+            plantuml_doc.add_note(
+                f"IMPORTS\n"
+                f"Internal: {total_internal_imports}  ({total_unique_internal_imports} unique)\n"
+                f"> {internal_imports})\n"
+                f"Python built-in: {total_python_builtins}\n"
+                f"> {python_builtins}\n"
+                f"Other: {total_external_imports}\n"
+                f"> {external_imports}\n"
+                f"Imported by: {total_imported}    ({total_unique_imported} unique)\n"
+                f"> {imported_from}"
             )
             plantuml_doc.end_container()
 
@@ -153,7 +194,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
             plantuml_doc.add_relation(package, '<|-[thickness=2]-', import_package, arrow_color, f":{num}")
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
-        return plantuml_doc_string
+        return [plantuml_doc_string]
 
     def produce_data(self):
         df = ImportsEnrichedDataframe().data()
@@ -167,7 +208,7 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
         times_imported_dict = {k: v['size'] for k, v in
                                df_agg.groupby('import_package').agg({'size': 'sum'}).to_dict(orient='index').items()}
 
-        df_pkgs = df_stats.merge(df[['package', 'package_name']].drop_duplicates(), on='package', how='left').\
+        df_pkgs = df_stats.merge(df[['package']].drop_duplicates(), on='package', how='left').\
             merge(df_pkgs_colors, on='package', how='left').\
             merge(df_agg, on='package', how='left')
         df_pkgs['total_imports'] = df_pkgs['package'].map(total_imports_dict)
@@ -177,16 +218,29 @@ class PackageRelationsGraphObj(PlantUMLDiagramObj):
         return df_pkgs
 
     @staticmethod
+    def _present_packages(packages_str, remove_package_root=False):
+        packages = packages_str.split(',')
+        if remove_package_root:
+            packages = PackageRelationsDocumentObj._keep_package_names(packages)
+        packages_sorted = sorted(packages)
+        result_str = single_to_multiline_string(packages_sorted)
+        print(result_str)
+        return result_str
+
+    @staticmethod
     def _keep_package_names(packages):
-        if isinstance(packages, str): # TODO load dataframe types correctly
-            packages = packages[1:-1].replace("'", '').replace(' ', ',').split(',')
         transform_func = lambda x: breakdown_import_path(x)[-1]
         packages_names = [transform_func(package) for package in packages]
         return packages_names
 
 
-class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
+class PackageRelationsGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
+    def build_plantuml_docs(self):
+        return PackageRelationsDocumentObj().documents()
+
+
+class PackageAndModuleRelationsDocumentObj(PlantUMLDocumentObjABC):
+    def build(self):
         df_pkgs, df_rels = self.produce_data()
 
         plantuml_doc = PlantUMLPackagesAndModulesBuilder()
@@ -202,7 +256,7 @@ class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
             plantuml_doc.add_relation(module, '<|-[thickness=3]-', import_module, arrow_color)
 
         plantuml_doc_string = plantuml_doc.finish_and_return()
-        return plantuml_doc_string
+        return [plantuml_doc_string]
 
     def produce_data(self):
         df_pkgs_colors = PackageColorMappingDataframe().data()
@@ -222,21 +276,28 @@ class PackageAndModuleRelationsGraphObj(PlantUMLDiagramObj):
 
         return df_agg, df_relations
 
-class ModuleRelationGraphObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
+
+class PackageAndModuleRelationsGraphHTMLObj(PlantUMLGraphSingleHTMLPageObj):
+    def build_plantuml_docs(self):
+        return PackageAndModuleRelationsDocumentObj().documents()
+
+
+class ModuleRelationDocuemntObj(PlantUMLDocumentObjABC):
+    def build(self):
         df = ImportsEnrichedDataframe().data()
         self._df = df[df['is_internal']]
         modules, import_modules = self._df['module'].tolist(), self._df['import_module'].tolist()
         subgraphs = Graph(list(zip(modules, import_modules))).subgraphs()
-        docs = [self.produce_doc_for_modules(subgraph.nodes) for subgraph in subgraphs]
+        docs = {f"Grpah {i+1} (size={subgraph.size()})": self.produce_doc_for_modules(subgraph.nodes)
+                for i, subgraph in enumerate(subgraphs)}
         return docs
 
     def produce_doc_for_modules(self, modules):
         df = self._df[self._df['module'].isin(modules) | self._df['import_module'].isin(modules)]
         plantuml_doc = PlantUMLPackagesAndModulesBuilder(direction='top to bottom direction', separator='set separator none')
 
-        # TODO DictObjects for PackageColorMappingDataframe
         package_colors = {k: v['color'] for k, v in PackageColorMappingDataframe().data().set_index('package').to_dict(orient='index').items()}
+        # package_colors = PackageColorMappingDataframe().to_json()
 
         df_mods = pd.DataFrame(df[['module', 'package']].values.tolist()+df[df['is_internal']][['import_module', 'import_package']].values.tolist(),
                                columns=['module', 'package']).drop_duplicates()
@@ -253,20 +314,30 @@ class ModuleRelationGraphObj(PlantUMLDiagramObj):
         return plantuml_doc_string
 
 
-class PackagesImportModuleGraphObj(PlantUMLDiagramObj):
-    def plantuml_docs(self):
+class ModuleRelationGraphObj(PlantUMLGraphMultiTabHTMLPageObj):
+    def build_plantuml_docs(self):
+        return ModuleRelationDocuemntObj().documents()
+
+
+class PackagesImportModuleDocumentObj(PlantUMLDocumentObjABC):
+    def build(self):
         df = PackagesImportModuleGraphDataframe().data()
 
-        plantuml_doc_strings = []
+        plantuml_doc_strings = {}
         for package in df['import_root'].unique():
             sub_df = df[df['import_root'] == package]
             module, import_root = sub_df['module'].tolist(), sub_df['import_root'].tolist()
             doc = ObjectRelationGraphBuilder(module, import_root).result()
-            plantuml_doc_strings.append(doc)
+            plantuml_doc_strings[package] = doc
         return plantuml_doc_strings
 
 
-class DependencyAnalysisObj(HTMLObject):
+class PackagesImportModuleGraphHTMLObj(PlantUMLGraphMultiTabHTMLPageObj):
+    def build_plantuml_docs(self):
+        return PackagesImportModuleDocumentObj().documents()
+
+
+class DependencyAnalysisObj(HTMLObjectABC):
     def build(self):
         df = ImportsEnrichedDataframe().data()
         df = df[(~df['is_no_imports']) & (~df['is_init_file'])]
@@ -284,13 +355,13 @@ Total number of packages=**{total_n_packages}**, total number of modules=**{tota
         return markdown_to_html+PackageDependencyStatsDataframe().data().to_html()+"<br>"+ModuleDependencyStatsDataframe().data().to_html()
 
 
-class DependencyReportObj(HTMLObject):
+class DependencyReportObj(HTMLObjectABC):
     content_dict = {
         'Analysis': DependencyAnalysisObj,
-        "Package Relations": PackageRelationsGraphObj,
-        "Package-Module Relations": PackageAndModuleRelationsGraphObj,
+        "Package Relations": PackageRelationsGraphHTMLObj,
+        "Package-Module Relations": PackageAndModuleRelationsGraphHTMLObj,
         "Module relations": ModuleRelationGraphObj,
-        "Commercial packages": PackagesImportModuleGraphObj,
+        "External package dependencies": PackagesImportModuleGraphHTMLObj,
     }
 
     def build(self):
@@ -305,9 +376,9 @@ if __name__ == '__main__':
     # ModuleDependencyStatsDataframe().data()
     # PackageDependencyStatsDataframe().data()
     # DependencyAnalysisObj().data()
-    # UMLClassDiagramObj().data()
+    UMLClassGraphHTMLObj().data()
     # UMLClassRelationDiagramObj().data()
-    ModuleRelationGraphObj().data()
-    PackageAndModuleRelationsGraphObj().data()
-    PackageRelationsGraphObj().data()
+    # ModuleRelationGraphObj().data()
+    # PackageAndModuleRelationsGraphObj().data()
+    # PackageRelationsGraphObj().data()
     # PackagesImportModuleGraphObj().data()

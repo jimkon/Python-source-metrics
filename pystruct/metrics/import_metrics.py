@@ -18,7 +18,7 @@ def enrich_import_raw_df(df):
     df['is_external'] = ~df['is_internal'] & ~df['is_no_imports']
 
     # checks if it is a python built-in module
-    df['is_builtin'] = ~df['is_internal'] & ~df['is_no_imports']
+    df['is_builtin'] = df['imports'].apply(is_python_builtin_package)
 
     # finds the module import path for in-project imports
     df['import_module'] = df['imports'].apply(lambda x: element_with_longest_match(x, df['module'].unique()))

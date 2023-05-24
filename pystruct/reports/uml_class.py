@@ -1,4 +1,5 @@
 import ast
+from collections import OrderedDict
 from functools import cached_property, lru_cache
 
 import pandas as pd
@@ -95,7 +96,7 @@ class PlantUMLDocument:
     def _start_uml(self):
         self._add_line('@startuml')
         self._add_line('left to right direction')
-        # self._add_line('set separator .')
+        self._add_line('set separator none')
         # self._add_line('scale max 1024 width')
 
     def _end_uml(self):
@@ -160,7 +161,7 @@ class PlantUMLDocument:
 
 
 class PlantUMLPackagesAndModulesBuilder:
-    def __init__(self, direction='left to right direction', separator='set separator .'):
+    def __init__(self, direction='left to right direction', separator='set separator none'):
         self._res_string = ""
         self._direction = direction
         self._separator = separator
@@ -233,13 +234,13 @@ class UMLClassBuilder(TreeNodeVisitor):
         return uml_doc.finish_and_return()
 
     def one_doc_per_package(self):
-        uml_docs = []
+        uml_docs = {}
         for package_name, package_dict in self._packages.items():
             uml_doc = PlantUMLDocument()
             uml_doc.add_package(package_name, package_dict)
-            uml_docs.append(uml_doc.finish_and_return())
+            uml_docs[package_name] = uml_doc.finish_and_return()
 
-        return uml_docs
+        return OrderedDict(uml_docs)
 
     def result(self):
         if self._seperate_packages:
