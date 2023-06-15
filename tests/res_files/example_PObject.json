@@ -1,0 +1,34 @@
+{
+  "example_project": {
+    "type": "directory",
+    "code": null,
+    "branches": [
+      "example_project.example_module1"
+    ]
+  },
+  "example_project.example_module1": {
+    "type": "module",
+    "code": "import one_package\nfrom another_package import that_module\n\ndef a_function(some, arguments):\n    var = \"something\"\n    return var\n\nclass a_class:\n    def a_class_method(self):\n        return 1\n",
+    "branches": [
+      "example_project.example_module1.a_function",
+      "example_project.example_module1.a_class"
+    ]
+  },
+  "example_project.example_module1.a_function": {
+    "type": "function",
+    "code": "def a_function(some, arguments):\n    var = \"something\"\n    return var",
+    "branches": []
+  },
+  "example_project.example_module1.a_class": {
+    "type": "class",
+    "code": "class a_class:\n    def a_class_method(self):\n        return 1",
+    "branches": [
+      "example_project.example_module1.a_class.a_class_method"
+    ]
+  },
+  "pystruct.a.a_class.a_class_method": {
+    "type": "class_method",
+    "code": "def a_class_method(self):\n    return 1",
+    "branches": []
+  }
+}
