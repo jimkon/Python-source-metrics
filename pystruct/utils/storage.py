@@ -2,7 +2,7 @@ import pathlib
 from io import StringIO
 import shutil
 
-from git import Repo
+# from git import Repo
 
 from pystruct.utils.python_utils import MultiSingleton
 from pystruct.utils.logs import log_disk_ops

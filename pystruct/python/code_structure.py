@@ -14,6 +14,10 @@ class ModuleObj(PythonCodeObj):
     type = "module"
 
 
+class ImportObj(PythonCodeObj):
+    type = "import"
+
+
 class ClassObj(CompoundStatementCodeMixin):
     type = "class"
 

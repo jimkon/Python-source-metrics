@@ -8,7 +8,7 @@ from pystruct.utils.object_utils import get_object_class_from_class_name
 
 
 dataset_controller = DatasetController.get_instance()
-dataset_name = 'No project selected' if dataset_controller.current_dataset is None else dataset_controller.current_dataset.dataset_name
+dataset_name = 'No project selected' if dataset_controller.current_dataset is None else dataset_controller.current_dataset.name
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test_key'
@@ -134,3 +134,5 @@ if __name__ == "__main__":
 # TODO tidy up the logs
 # TODO file explorer for load dataset
 # TODO make sure it runs from docker also
+# TODO fetch Variables, FunctionArgs, Imports
+# TODO add pystruct commands for --uml, --report, --structure

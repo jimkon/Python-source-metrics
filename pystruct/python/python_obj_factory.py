@@ -28,6 +28,11 @@ class PathObjectFactory:
         module_obj = ModuleObj(name, path, code)
         return TreeNode(parent, data=module_obj)
 
+    def import_node(self, name, code, parent=None):
+        path = parent.data.path
+        import_obj = ImportObj(name, path, code)
+        return TreeNode(parent, data=import_obj)
+
     def class_node(self, name, code, parent=None):
         path = parent.data.path
         class_obj = ClassObj(name, path, code)
@@ -50,6 +55,8 @@ class DictObjectFactory:
             return DirectoryObj(name=name, path=None)
         elif node_dict['type'] == "module":
             return ModuleObj(name, None, node_dict['code'])
+        elif node_dict['type'] == "import":
+            return ImportObj(name, None, node_dict['code'])
         elif node_dict['type'] == "class":
             return ClassObj(name, None, node_dict['code'])
         elif node_dict['type'] == "function":
