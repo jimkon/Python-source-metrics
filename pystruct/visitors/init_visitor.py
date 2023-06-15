@@ -6,7 +6,7 @@ from pystruct.utils.path_utils import load_file_as_string
 from pystruct.utils.python_file_utils import is_python_file
 from pystruct.visitors.visitor import TreeNodeVisitor
 
-
+# https://python-ast-explorer.com/
 class PythonObjInitializer(TreeNodeVisitor):
 
     def __init__(self, obj_factory):
@@ -33,8 +33,12 @@ class PythonObjInitializer(TreeNodeVisitor):
 
     def visit_module(self, node):
         log_cyan(f".Visiting module {node}", verbosity=3)
-        asts_to_fetch = {ast.ClassDef: self._obj_factory.class_node,
-                         ast.FunctionDef: self._obj_factory.function}
+        asts_to_fetch = {
+            # ast.Import: self._obj_factory.import_node,
+            # ast.ImportFrom: self._obj_factory.import_node,
+            ast.ClassDef: self._obj_factory.class_node,
+            ast.FunctionDef: self._obj_factory.function
+        }
 
         list_objs = []
 

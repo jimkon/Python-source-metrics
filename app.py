@@ -134,3 +134,5 @@ if __name__ == "__main__":
 # TODO tidy up the logs
 # TODO file explorer for load dataset
 # TODO make sure it runs from docker also
+# TODO fetch Variables, FunctionArgs, Imports
+# TODO add pystruct commands for --uml, --report, --structure

@@ -20,6 +20,8 @@ class TreeNodeVisitor(AbstractVisitor):
             self.visit_directory(node)
         elif node.data.type == "module":
             self.visit_module(node)
+        elif node.data.type == "import":
+            self.visit_import(node)
         elif node.data.type == "class":
             self.visit_class(node)
         elif node.data.type == "function":
@@ -33,6 +35,9 @@ class TreeNodeVisitor(AbstractVisitor):
         pass
 
     def visit_module(self, node):
+        pass
+
+    def visit_import(self, node):
         pass
 
     def visit_class(self, node):
