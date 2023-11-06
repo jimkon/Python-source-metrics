@@ -8,7 +8,7 @@ from pystruct.utils.object_utils import get_object_class_from_class_name
 
 
 dataset_controller = DatasetController.get_instance()
-dataset_name = 'No project selected' if dataset_controller.current_dataset is None else dataset_controller.current_dataset.dataset_name
+dataset_name = 'No project selected'  # if dataset_controller.current_dataset is None else dataset_controller.current_dataset.dataset_name
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'test_key'
@@ -134,3 +134,7 @@ if __name__ == "__main__":
 # TODO tidy up the logs
 # TODO file explorer for load dataset
 # TODO make sure it runs from docker also
+# TODO add + on classmethods to show as methods (UMLClass diagrams)
+# TODO extraction of python code features (like class methods, functions) should be separated from the UML class and class relation diagrams
+# TODO PackageRelations should have an option of detailed/no-details
+# TODO long plantuml diagrams get cut
