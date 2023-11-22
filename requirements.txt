@@ -1,8 +1,9 @@
-pandas
-plantuml
-GitPython
+pandas==1.5.3
+plantuml==0.3.0
+GitPython==3.1.30
 Flask==2.2.2
-matplotlib
-networkx
-markdown
-json2html
+Werkzeug==2.2.2
+matplotlib==3.7.1
+networkx==2.8.4
+markdown==3.4.1
+json2html==1.3.0
