@@ -9,7 +9,7 @@ class JSONableMixin(abc.ABC):
 
 class HTMLMixin:
     def to_html(self):
-        return f"<h2>to_html:'{self}'</h2>"
+        raise NotImplementedError
 
 
 class NameMixin:

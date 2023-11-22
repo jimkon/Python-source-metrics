@@ -85,7 +85,7 @@ class AbstractObject(abc.ABC, Singleton, HTMLMixin, NameMixin):
         return None
 
     def to_html(self):
-        return f"to_html:{self.data()}"
+        return f"{self.data()}"
 
     @classmethod
     def name(cls):
@@ -123,7 +123,7 @@ class DataframeObjectABC(AbstractObject, abc.ABC):
         return build_res
 
     def to_html(self):
-        return f"to_html:{self.dataframe().to_html()}"
+        return self.dataframe().to_html()
 
 
 class JSONObjectABC(AbstractObject, abc.ABC):
@@ -138,7 +138,7 @@ class JSONObjectABC(AbstractObject, abc.ABC):
         return build_res
 
     def to_html(self):
-        return f"to_html:{json2html.convert(json=self.json())}"
+        return json2html.convert(json=self.json())
 
 
 class HTMLObjectABC(AbstractObject, abc.ABC):
